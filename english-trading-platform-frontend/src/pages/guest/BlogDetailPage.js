@@ -165,7 +165,8 @@ export default function BlogDetailPage() {
                   {s.image?.src && <Figure src={s.image.src} caption={s.image.caption} />}
 
                   {/* links[] */}
-                  <h3>Tham khảo thêm:</h3>
+                  {s.links && s.links.length > 0 && (
+                    <h3>Tham khảo thêm:</h3>)}
                   {Array.isArray(s.links) && s.links.length > 0 && (
                     <ul className="article-links">
                       {s.links.map((l, i) => (
