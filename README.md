@@ -1,12 +1,11 @@
-<h1 align="center">Booking System</h1>
+<h1 align="center">English Trading Platform</h1>
 
-Welcome to the Booking System! This project is designed to facilitate easy and efficient booking management for various types of businesses, with a focus on local businesses, using a robust and scalable technology stack. It includes comprehensive features for user authentication, business and booking management, payment integration, and more.
+This is my solution to the Antoree tech test: an English tutoring marketplace project.
 
 ## Table of Contents
 1. [Features](#features)
 2. [Tech Stack](#tech-stack)
 3. [Installation](#installation)
-4. [Deployment](#deployment)
 
 ## Features
 
@@ -14,32 +13,17 @@ Welcome to the Booking System! This project is designed to facilitate easy and e
     - Implement a user registration and login system using JWT (JSON Web Token).
   
 2. **User Roles**
-    - Define different roles such as Admin, Business Owner, and Customer.
+    - Define different roles such as Admin, Lecturer, and Customer.
     - Each role has access to their respective dashboard:
-        - Business Owners have access to their own business dashboard.
+        - Lecturer  have access to their own Lecturer dashboard.
         - Customers have access to their own customer dashboard.
         - Admins have access to their own admin dashboard.
+3. **Blog Management**
+   - Displays posts according to Blog Category.
+   - Shows a “Viewest 3” section (sorted by view desc) and a “View All” link to the full list.
+   - Shows Blog Detail includes: title, cover image, author, publish/update dates, category/tags, and full content. Extras:       breadcrumbs, related posts from the same category, TOC, and action buttons.
+   - Internal links from detail pages back to category and to related posts.
 
-3. **Business Management**
-    - Allow business owners to register their businesses.
-    - Enable business profile management including business hours, services offered, and pricing.
-    - Provide business owners the ability to track customer bookings, including date, day, time, status, and payment status.
-    - Allow business owners to view and reply to customer reviews.
-
-4. **Booking Management**
-    - Enable customers to view available businesses and book services.
-    - Provide booking confirmation and cancellation features.
-    - Include a calendar view and available hours for customers to manage bookings.
-
-5. **Payment Integration**
-    - Integrate [Stripe](https://stripe.com/) for customers to make payments.
-
-6. **Reviews and Ratings**
-    - Allow customers to leave reviews and ratings for businesses.
-
-7. **Admin Dashboard**
-    - Monitor all registered businesses, display user accounts, and track bookings.
-    - Generate reports and analytics.
 
 ## Tech Stack
 
@@ -47,9 +31,7 @@ Welcome to the Booking System! This project is designed to facilitate easy and e
 
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
 
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-
-[![Stripe](https://img.shields.io/badge/Stripe-008CDD?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-336791?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.org/)
 
 [![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 
@@ -62,8 +44,7 @@ Welcome to the Booking System! This project is designed to facilitate easy and e
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) installed
-- [PostgreSQL](https://www.postgresql.org/) installed
-- A [Stripe](https://stripe.com/) account for payment integration
+- [PostgreSQL](https://www.mysql.org/) installed
 
 ### Backend Setup
 
@@ -80,7 +61,6 @@ Welcome to the Booking System! This project is designed to facilitate easy and e
 
 3. Set up the environment variables in a `.env` file:
     ```plaintext
-    STRIPE_SECRET_KEY=
     DATABASE_HOST=
     DATABASE_PORT=
     DATABASE_USERNAME=
@@ -109,7 +89,6 @@ Welcome to the Booking System! This project is designed to facilitate easy and e
     - For development: Create a `.env.development` file with the following content:
       ```plaintext
       REACT_APP_API_URL=http://localhost:3000
-      REACT_APP_STRIPE_PUBLIC_KEY=
       ```
       
 4. Run the frontend server (default port 3001):
@@ -117,22 +96,5 @@ Welcome to the Booking System! This project is designed to facilitate easy and e
     npm start
     ```
 
-You can access the frontend at [http://localhost:3001](http://localhost:3001) for development and [https://booking-system-muqm.onrender.com](https://booking-system-muqm.onrender.com) for production. The backend can be accessed at [http://localhost:3000](http://localhost:3000) for development and [https://booking-system-backend-i7qd.onrender.com](https://booking-system-backend-i7qd.onrender.com) for production.
+You can access the frontend at [http://localhost:3001](http://localhost:3001) for development. The backend can be accessed at [http://localhost:3000](http://localhost:3000) for development.
 
-### Testing with Stripe Payment
-
-To test payments with Stripe, use the following test card details:
-
-- **Card Number**: 4242 4242 4242 4242
-- **Expiry Date**: Any future date
-- **CVC**: Any 3 digits
-- **ZIP Code**: Any 5 digits
-
-## Deployment
-
-### Render Deployment Links
-
-- Frontend: [https://booking-system-muqm.onrender.com](https://booking-system-muqm.onrender.com)
-- Backend: [https://booking-system-backend-i7qd.onrender.com](https://booking-system-backend-i7qd.onrender.com)
-
----
