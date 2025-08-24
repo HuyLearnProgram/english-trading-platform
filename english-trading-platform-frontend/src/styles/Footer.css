@@ -1,0 +1,90 @@
+:root{ --green:#1ea84a; }
+
+.ant-footer{
+  background:#1f1f1f;
+  color:#e5e7eb;
+  padding:32px 0 24px;
+  position:relative;
+  font-size:15px;
+}
+
+.ant-footer h4{
+  margin:0 0 14px;
+  color:#fafafa;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+}
+
+.ant-footer a{ color:#cbd5e1; text-decoration:none; }
+.ant-footer a:hover{ color:#ffffff; }
+
+.ant-footer-grid{
+  display:grid;
+  gap:28px;
+  grid-template-columns: repeat(4,1fr);
+}
+
+.ant-footer .col ul{ list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+
+.ant-footer .become-teacher{
+  margin:6px 0 12px;
+  height:40px;
+  padding:0 18px;
+  border-radius:999px;
+  font-weight:700;
+  line-height:40px;
+  display:inline-flex;
+  align-items:center; justify-content:center;
+}
+
+.ant-footer .ant-social{ display:flex; gap:12px; }
+.ant-footer .ant-social a{
+  width:36px; height:36px; border-radius:50%;
+  background:#2c2c2c; display:flex; align-items:center; justify-content:center;
+  border:1px solid #383838;
+}
+.ant-footer .ant-social a:hover{ background:#3a3a3a; }
+
+.store-badges img{
+  display:block; 
+  width:150px; 
+  height:auto;
+  background:transparent;
+}
+.store-badges a + a{ margin-top:10px; display:inline-block; }
+
+.ant-footer-divider{
+  border:0; border-top:1px solid #2b2b2b; margin:22px 0;
+}
+
+.ant-company p{ margin:6px 0; color:#cdd3da; }
+.ant-company strong{ color:#e9eef5; }
+
+.ant-footer-bottom{
+  margin-top:10px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  color:#cdd3da;
+}
+.ant-footer-bottom .links a{ margin-left:22px; }
+
+/* Nút lên đầu trang */
+.ant-to-top{
+  position:fixed; right:22px; bottom:22px; width:46px; height:46px;
+  border-radius:50%; border:0; cursor:pointer;
+  background:#ffffff; color:#111;
+  box-shadow:0 12px 28px rgba(0,0,0,.25);
+  display:flex; align-items:center; justify-content:center;
+}
+.ant-to-top:hover{ transform:translateY(-2px); }
+
+/* Responsive */
+@media (max-width: 1024px){
+  .ant-footer-grid{ grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 560px){
+  .ant-footer-grid{ grid-template-columns: 1fr; }
+  .ant-footer-bottom{ flex-direction:column; align-items:flex-start; }
+  .ant-footer-bottom .links a{ margin-left:0; margin-right:16px; }
+}
