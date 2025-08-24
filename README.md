@@ -45,7 +45,7 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) installed
-- [PostgreSQL](https://www.mysql.org/) installed
+- [MySQL](https://www.mysql.org/) installed
 
 ### Backend Setup
 
