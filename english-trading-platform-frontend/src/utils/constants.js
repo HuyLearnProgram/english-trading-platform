@@ -46,3 +46,21 @@ export const CERTS_LIST = [
   { value: 'Master degree in English Teaching',   label: 'Master degree in English Teaching' },
   { value: 'PhD degree in English Teaching',      label: 'PhD degree in English Teaching' },
 ];
+
+export const trackBanners = [
+    {
+      href: 'https://prepedu.com/vi/ielts?utm_source=website&utm_medium=bannerblog',
+      src: 'https://static-assets.prepcdn.com/content-management-system/prepedu_giam_gia_va_tang_qua_khi_mua_lo_trinh_hoc_ielts_2_khoa_tro_len_0f71826993.gif',
+      alt: 'Đăng ký lộ trình IELTS',
+    },
+    {
+      href: 'https://prepedu.com/vi/toeic?ref=blog',
+      src: 'https://static-assets.prepcdn.com/content-management-system/hoc_toeic_4_ky_nang_cung_prep_3404f79608.png',
+      alt: 'Lộ trình học TOEIC',
+    },
+    {
+      href: 'https://prepedu.com/vi/prep-talk-english?ref=blog',
+      src: 'https://static-assets.prepcdn.com/content-management-system/hoc_tieng_anh_giao_tiep_cung_prep_talk_c340b99738.png',
+      alt: 'Học tiếng Anh giao tiếp cùng Antoree Talk',
+    },
+  ];

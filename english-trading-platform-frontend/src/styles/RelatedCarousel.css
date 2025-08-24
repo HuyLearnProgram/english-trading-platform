@@ -1,0 +1,56 @@
+.relcar { margin-top: 24px; }
+.relcar-viewport { position: relative; overflow: hidden; }
+.relcar-track {
+  display: flex;
+  transition: transform .4s ease;
+  width: 100%;
+}
+.relcar-slide { flex: 0 0 100%; }
+.relcar-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+
+/* Nút điều hướng */
+.relcar-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.relcar-prev { left: 8px; }
+.relcar-next { right: 8px; }
+.relcar-arrow:disabled { opacity: .5; cursor: default; }
+
+/* Dots */
+.relcar-dots { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+.relcar-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #cfd8e3;
+  border: none; cursor: pointer;
+  padding: 0;
+}
+.relcar-dot.is-active { background: #a7f3d0; }
+
+/* Hover xanh lá cho nút (khi không disable) */
+.relcar-arrow:not(:disabled):hover {
+  background: #ecfdf5;            /* emerald-50 */
+  border-color: #10b981;          /* emerald-500 */
+  color: #10b981;                  /* emerald-800 (icon) */
+  box-shadow: 0 2px 6px rgba(16,185,129,.25);
+  transform: translateY(-50%) scale(1.03);
+}
+/* Hover xanh lá nhạt cho dot */
+.relcar-dot:hover {
+  background: #a7f3d0;            /* emerald-200 */
+  border-color: #10b981;
+  transform: scale(1.2);
+}
+
+/* Mobile: 1 card/slide */
+@media (max-width: 768px) {
+  .relcar-grid { grid-template-columns: 1fr; }
+}

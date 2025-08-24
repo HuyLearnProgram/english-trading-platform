@@ -4,9 +4,9 @@ import { Repository, Brackets, ILike } from 'typeorm';
 import { Blog } from './blog.entity';
 import { BlogCategory } from '../blog-category/blog-category.entity';
 import {
-  CreateBlogCategoryDto, UpdateBlogCategoryDto,
   CreateBlogDto, UpdateBlogDto, QueryBlogsDto
 } from './dto';
+import { Teacher } from 'src/teacher/teacher.entity';
 
 const slugify = (s: string) =>
   s.toLowerCase()
@@ -18,18 +18,25 @@ export class BlogService {
   constructor(
     @InjectRepository(Blog) private readonly blogRepo: Repository<Blog>,
     @InjectRepository(BlogCategory) private readonly catRepo: Repository<BlogCategory>,
+    @InjectRepository(Teacher) private readonly teacherRepo: Repository<Teacher>,
   ) {}
 
   // ===== Blog =====
+  // ===== Blog =====
   async createBlog(dto: CreateBlogDto) {
-    // Ưu tiên introText/introImage, fallback từ intro.text / intro.images[0]
     const introText = dto.introText ?? dto.intro?.text ?? null;
     const introImage =
       dto.introImage ??
       (dto.intro?.images && dto.intro.images.length
         ? { src: dto.intro.images[0].src, caption: dto.intro.images[0].caption }
         : null);
-  
+
+    // Validate authorId (nếu truyền lên)
+    if (dto.authorId) {
+      const exist = await this.teacherRepo.findOne({ where: { id: dto.authorId } });
+      if (!exist) throw new NotFoundException('Teacher (author) not found');
+    }
+
     const blog = this.blogRepo.create({
       title: dto.title,
       slug: dto.slug || slugify(dto.title),
@@ -39,10 +46,10 @@ export class BlogService {
       toc: dto.toc,
       sections: dto.sections,
       status: dto.status ?? 'draft',
-      author: dto.author,
-      publishedAt: dto.publishedAt ? new Date(dto.publishedAt) : new Date()
+      authorId: dto.authorId ?? null,
+      publishedAt: dto.publishedAt ? new Date(dto.publishedAt) : new Date(),
     });
-  
+
     return this.blogRepo.save(blog);
   }
   
@@ -53,7 +60,12 @@ export class BlogService {
       (dto.intro?.images && dto.intro.images.length
         ? { src: dto.intro.images[0].src, caption: dto.intro.images[0].caption }
         : undefined);
-  
+
+    if (dto.authorId !== undefined && dto.authorId !== null) {
+      const exist = await this.teacherRepo.findOne({ where: { id: dto.authorId } });
+      if (!exist) throw new NotFoundException('Teacher (author) not found');
+    }
+
     const cur = await this.blogRepo.preload({
       id,
       title: dto.title,
@@ -64,13 +76,13 @@ export class BlogService {
       toc: dto.toc,
       sections: dto.sections,
       status: dto.status,
-      author: dto.author,
-      publishedAt: dto.publishedAt ? new Date(dto.publishedAt) : undefined
+      authorId: dto.authorId, // <- thay vì author JSON
+      publishedAt: dto.publishedAt ? new Date(dto.publishedAt) : undefined,
     });
-  
+
     if (!cur) throw new NotFoundException('Blog not found');
     if (dto.title && !dto.slug) cur.slug = slugify(dto.title);
-  
+
     return this.blogRepo.save(cur);
   }
   
@@ -86,7 +98,8 @@ export class BlogService {
     const limit = Math.min(50, Math.max(1, q.limit ?? 12));
 
     const qb = this.blogRepo.createQueryBuilder('b')
-      .leftJoinAndSelect('b.category', 'c');
+      .leftJoinAndSelect('b.category', 'c')
+      .leftJoinAndSelect('b.author', 't'); // Thêm join với bảng Teacher
 
     if (q.search) {
       const s = `%${q.search.toLowerCase()}%`;

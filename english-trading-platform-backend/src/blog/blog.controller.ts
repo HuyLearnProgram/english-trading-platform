@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, Delete } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import {
-  CreateBlogCategoryDto, UpdateBlogCategoryDto,
   CreateBlogDto, UpdateBlogDto, QueryBlogsDto
 } from './dto';
 

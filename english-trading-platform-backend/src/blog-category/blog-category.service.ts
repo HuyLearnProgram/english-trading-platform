@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { BlogCategory } from "./blog-category.entity";
-import { CreateBlogCategoryDto, UpdateBlogCategoryDto } from "src/blog/dto";
+import { CreateBlogCategoryDto, UpdateBlogCategoryDto } from "./dto";
 
 const slugify = (s: string) =>
   s.toLowerCase()

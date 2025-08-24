@@ -1,0 +1,98 @@
+/* Wrapper */
+.tocb {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+  }
+  
+  /* Header */
+  .tocb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafafa;
+    border-radius: 8px 8px 0 0;
+  }
+  .tocb-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  /* Actions (scroll up/down) */
+  .tocb-actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .tocb-actions button {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .tocb-actions button:hover { background: #eef2ff; color: #1d4ed8; }
+  
+  /* Body */
+  .tocb-body {
+    padding: 12px;
+    overflow: auto;
+    border-radius: 0 0 8px 8px;
+  }
+  
+  /* List */
+  .tocb-list,
+  .tocb-children {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+  }
+  .tocb-item { margin: 6px 0; }
+  
+  /* Link + custom orange square bullet */
+  .tocb-item > a {
+    position: relative;
+    display: inline-block;
+    padding-left: 14px;
+    text-decoration: none;
+    color: #111827;
+  }
+  .tocb-item > a:hover { color: #2563eb; text-decoration: underline; }
+  
+  .tocb-item > a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.9em;
+    width: 6px;
+    height: 6px;
+    background: #ff9e00;
+    border-radius: 1px;
+    transform: translateY(-50%);
+  }
+  
+  /* Children indentation + lighter bullet */
+  .tocb-children {
+    margin-top: 6px;
+    margin-left: 18px;
+  }
+  .tocb-children .tocb-item > a::before {
+    background: #ffb84d;
+  }
+  
+  /* Optional level classes if you want different spacing */
+  .tocb-item.level-1 { margin-left: 2px; }
+  
+  @media (max-width: 768px) {
+    .tocb-body { max-height: 360px; }
+  }
+  

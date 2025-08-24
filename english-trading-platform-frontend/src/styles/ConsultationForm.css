@@ -1,0 +1,110 @@
+/* Khung tổng: nền xanh lá nhạt + bo góc lớn */
+.cf-wrap {
+    margin-top: 16px;
+    background: #e7f6ef;            /* xanh lá nhạt */
+    border: 1px solid #c7eadb;
+    border-radius: 14px;
+    padding: 14px;
+  }
+  
+  /* Tiêu đề + mô tả */
+  .cf-head { padding: 4px 6px 10px; }
+  .cf-title {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f5132;                  /* xanh đậm */
+  }
+  .cf-sub {
+    margin: 0;
+    font-size: 14px;
+    color: #155e75;                  /* xanh teal nhẹ */
+  }
+  
+  /* Thân form (thẻ trắng bên trong) */
+  .cf-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  }
+  
+  /* Field */
+  .cf-field { display: block; margin-bottom: 12px; }
+  .cf-label {
+    display: block;
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  
+  /* Input & Textarea */
+  .cf-input, .cf-textarea {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    box-sizing: border-box;
+  }
+  .cf-textarea {
+    height: auto;
+    padding: 10px 12px;
+    resize: vertical;
+  }
+  .cf-input:focus, .cf-textarea:focus {
+    border-color: #10b981;           /* emerald-500 */
+    box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+  }
+  
+  /* Error */
+  .cf-error {
+    display: block;
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 12px;
+  }
+  .cf-input.is-error { border-color: #f87171; }
+  
+  /* Ghi chú nhỏ */
+  .cf-note {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 6px 0 10px;
+  }
+  
+  /* Thông báo thành công */
+  .cf-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  
+  /* Nút gửi – xanh lá */
+  .cf-submit {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: #10b981;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: filter .15s ease, transform .1s ease, background-color .2s ease;
+  }
+  .cf-submit:hover { background: #0ea370; }
+  .cf-submit:active { transform: translateY(1px); }
+  .cf-submit:disabled { opacity: .7; cursor: default; }
+  

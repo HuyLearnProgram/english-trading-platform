@@ -20,7 +20,7 @@ const App = () => {
         <Route path="/customer" element={<PrivateRoute component={CustomerDashboard} role="customer" />}>
           <Route path="home" element={<CustomerHome />} />
           <Route path='blog' element={<BlogPage />} />
-          <Route path="blog/:id" element={<BlogDetailPage />} />
+          <Route path="blog/:slug" element={<BlogDetailPage />} />
         </Route>
         <Route
           path="/"

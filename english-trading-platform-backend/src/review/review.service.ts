@@ -3,8 +3,7 @@ import { Injectable, NotFoundException,  ForbiddenException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Review } from './review.entity';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
+import { CreateReviewDto, UpdateReviewDto } from './dto';
 import { User } from '../users/user.entity';
 
 @Injectable()

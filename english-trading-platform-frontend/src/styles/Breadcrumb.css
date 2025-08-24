@@ -1,5 +1,5 @@
 .breadcrumb { padding: 16px 0; }
-.breadcrumb ol { display:flex; flex-wrap:wrap; gap:6px; color:#6b7280; }
+.breadcrumb ol { display:flex; flex-wrap:wrap; gap:6px; color:#6b7280; padding-left: 0; }
 .breadcrumb li { display:flex; align-items:center; gap:8px; font-size:14px; }
 .breadcrumb li::after { content:"›"; opacity:.6; margin-left:6px; }
 .breadcrumb li.is-active { color:#111827; font-weight:600; }

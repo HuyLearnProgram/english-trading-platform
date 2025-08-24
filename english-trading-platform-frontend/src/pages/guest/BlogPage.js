@@ -3,27 +3,12 @@ import { Link } from 'react-router-dom';
 import { fetchTopBlogsByCategory, searchBlogsByTitle } from '../../apis/blog';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import '../../styles/BlogPage.css';
+import { trackBanners } from '../../utils/constants';
 
 const placeholderImg =
   'https://via.placeholder.com/768x432.png?text=No+Image';
 // Banner “Lộ trình cá nhân hoá”
-const trackBanners = [
-    {
-      href: 'https://prepedu.com/vi/ielts?utm_source=website&utm_medium=bannerblog',
-      src: 'https://static-assets.prepcdn.com/content-management-system/prepedu_giam_gia_va_tang_qua_khi_mua_lo_trinh_hoc_ielts_2_khoa_tro_len_0f71826993.gif',
-      alt: 'Đăng ký lộ trình IELTS',
-    },
-    {
-      href: 'https://prepedu.com/vi/toeic?ref=blog',
-      src: 'https://static-assets.prepcdn.com/content-management-system/hoc_toeic_4_ky_nang_cung_prep_3404f79608.png',
-      alt: 'Lộ trình học TOEIC',
-    },
-    {
-      href: 'https://prepedu.com/vi/prep-talk-english?ref=blog',
-      src: 'https://static-assets.prepcdn.com/content-management-system/hoc_tieng_anh_giao_tiep_cung_prep_talk_c340b99738.png',
-      alt: 'Học tiếng Anh giao tiếp cùng PREP Talk',
-    },
-  ];
+
 
 const BlogPage = () => {
   const [categories, setCategories] = useState([]);
@@ -70,10 +55,10 @@ const BlogPage = () => {
 
       {/* Header title + subtitle */}
       <header className="blog-header">
-        <h1>Blog Học Tập by PREP Education</h1>
+        <h1>Blog Học Tập by Antoree Education</h1>
         <p>
           Chia sẻ mẹo học tập hiệu quả và chiến lược, kiến thức và tài liệu
-          chuẩn bị cho các kỳ thi như IELTS, TOEIC
+          cho bất kỳ ai đang theo đuổi việc học tập, từ tiếng Anh
         </p>
       </header>
 
@@ -127,7 +112,7 @@ const BlogPage = () => {
               <ul className="search-results">
                 {searchResults.slice(0, 6).map((b) => (
                   <li key={b.id}>
-                    <Link to={`/blog/${b.slug || b.id}`}>{b.title}</Link>
+                    <Link to={`/customer/blog/${b.slug || b.id}`}>{b.title}</Link>
                   </li>
                 ))}
               </ul>
@@ -177,7 +162,7 @@ const CategoryBlock = ({ category }) => {
       <div className="hero-row">
         <Link
           className="hero-media"
-          to={`/blog/${first.slug || first.id}`}
+          to={`/customer/blog/${first.slug || first.id}`}
           title={first.title}
         >
           <img
@@ -188,7 +173,7 @@ const CategoryBlock = ({ category }) => {
         </Link>
         <div className="hero-info">
           <Link
-            to={`/blog/${first.slug || first.id}`}
+            to={`/customer/blog/${first.slug || first.id}`}
             className="hero-title link"
           >
             {first.title}
@@ -202,7 +187,7 @@ const CategoryBlock = ({ category }) => {
         {[second, third]
           .filter(Boolean)
           .map((b) => (
-            <Link key={b.id} to={`/blog/${b.slug || b.id}`} className="subcard">
+            <Link key={b.id} to={`/customer/blog/${b.slug || b.id}`} className="subcard">
               <div className="thumb">
                 <img src={b?.introImage?.src || placeholderImg} alt={b.title} loading="lazy" />
               </div>
@@ -214,7 +199,7 @@ const CategoryBlock = ({ category }) => {
       </div>
 
       <div className="view-all-wrap">
-        <Link to={`/blog/category/${id}`} className="view-all">
+        <Link to={`/customer/blog/category/${id}`} className="view-all">
           Xem tất cả
           <svg viewBox="0 0 448 512" width="16" height="16" aria-hidden="true">
             <path

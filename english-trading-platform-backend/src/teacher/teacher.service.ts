@@ -3,7 +3,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { Teacher } from './teacher.entity';
-import { CreateTeacherDto, QueryTeachersDto, UpdateTeacherDto } from './dto';
+import { QueryTeachersDto } from './dto/query-teacher.dto';
+import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { UpdateTeacherDto } from './dto/update-teacher.dto';
 
 const parseCSV = (v?: string) =>
   (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []) as string[];

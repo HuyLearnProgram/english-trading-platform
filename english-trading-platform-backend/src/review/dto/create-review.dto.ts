@@ -1,4 +1,3 @@
-// src/review/dto/create-review.dto.ts
 import { IsInt, IsString, IsNotEmpty } from 'class-validator';
 
 export class CreateReviewDto {

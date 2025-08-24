@@ -1,0 +1,51 @@
+/* ===== Author (Teacher) card ===== */
+.author-card {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 22px 0;
+  }
+  
+  .author-avatar {
+    width: 120px;
+    min-width: 120px;
+  }
+  .author-avatar img {
+    width: 100%;
+    border-radius: 8px;
+    background: #f3f4f6;
+  }
+  
+  .author-info { flex: 1; }
+  .author-name { font-weight: 700; color: #111827; }
+  .author-role { font-size: 12px; color: #6b7280; margin: 2px 0 8px; }
+  .author-bio { font-size: 14px; color: #111827; line-height: 1.6; white-space: pre-line; }
+  
+  /* CTA */
+  .author-cta { margin-top: 12px; }
+  .author-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #16a34a;     /* green-600 */
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .author-cta-btn:hover { filter: brightness(.96); }
+  .author-cta-btn:active { transform: translateY(0.5px); }
+  
+  @media (max-width: 480px) {
+    .author-card { padding: 14px; }
+    .author-avatar { width: 100px; min-width: 100px; }
+  }
+  

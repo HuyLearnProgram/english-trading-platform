@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Review } from '../review/review.entity';
 import { LessonPackage } from '../lesson-package/lesson-package.entity';
+import { Blog } from 'src/blog/blog.entity';
 
 @Entity()
 export class Teacher {
@@ -55,6 +56,9 @@ export class Teacher {
 
   @OneToMany(() => LessonPackage, p => p.teacher, { cascade: true })
   lessonPackages: LessonPackage[];
+
+  @OneToMany(() => Blog, (b) => b.author)
+  blogs: Blog[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -4,6 +4,7 @@ import {
     CreateDateColumn, UpdateDateColumn, JoinColumn
   } from 'typeorm';
   import { BlogCategory } from '../blog-category/blog-category.entity';
+import { Teacher } from 'src/teacher/teacher.entity';
   
   @Entity('blogs')
   export class Blog {
@@ -48,8 +49,13 @@ import {
     @Column({ type: 'varchar', length: 20, default: 'draft' })
     status: 'draft' | 'published';
   
-    @Column('json', { nullable: true })
-    author?: { name: string; avatar?: string; bio?: string; socials?: any };
+    // ====== TÁC GIẢ (Teacher) ======
+    @ManyToOne(() => Teacher, { eager: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'authorId' })
+    author?: Teacher;
+
+    @Column({ nullable: true })
+    authorId?: number;
   
     @Column({ type: 'timestamp', nullable: true })
     publishedAt?: Date;

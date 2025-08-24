@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Patch, Delete } from '@nestjs/common';
 import { TeachersService } from './teacher.service';
-import { CreateTeacherDto, QueryTeachersDto, UpdateTeacherDto } from './dto';
+import { CreateTeacherDto, UpdateTeacherDto, QueryTeachersDto } from './dto';
+
 
 @Controller('teachers')
 export class TeachersController {
