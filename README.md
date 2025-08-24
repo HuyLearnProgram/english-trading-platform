@@ -1,4 +1,4 @@
-<h1 align="center">Booking System</h1>
+<h1 align="center">English Trading Platform</h1>
 
 This is my solution to the Antoree tech test: an English tutoring marketplace project.
 
