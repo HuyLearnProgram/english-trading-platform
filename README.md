@@ -99,7 +99,7 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 
 You can access the frontend at [http://localhost:3001](http://localhost:3001) for development. The backend can be accessed at [http://localhost:3000](http://localhost:3000) for development.
 
-##Background
+## Background
 ### Lecturer Search 
 ![Lecturer Search](./background/lecturer.png)
 ### Blog List
