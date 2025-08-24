@@ -13,12 +13,16 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
     - Implement a user registration and login system using JWT (JSON Web Token).
   
 2. **User Roles**
-    - Define different roles such as Admin, Business Owner, and Customer.
+    - Define different roles such as Admin, Lecturer, and Customer.
     - Each role has access to their respective dashboard:
         - Lecturer  have access to their own Lecturer dashboard.
         - Customers have access to their own customer dashboard.
         - Admins have access to their own admin dashboard.
-
+3. **Blog Management**
+   - Displays posts according to Blog Category.
+   - Shows a “Viewest 3” section (sorted by view desc) and a “View All” link to the full list.
+   - Shows Blog Detail includes: title, cover image, author, publish/update dates, category/tags, and full content. Extras:       breadcrumbs, related posts from the same category, TOC, and action buttons.
+   - Internal links from detail pages back to category and to related posts.
 
 
 ## Tech Stack
