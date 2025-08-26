@@ -79,7 +79,7 @@ export default function BlogDetailPage() {
     if (blog.category) {
       arr.push({
         label: blog.category.name,
-        to: `/blog/category/${blog.category.slug ?? blog.category.id}`,
+        to: `/blog/category/${blog.category.id}`,
       });
     }
     arr.push({ label: blog.title });

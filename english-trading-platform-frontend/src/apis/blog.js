@@ -32,3 +32,19 @@ export const fetchRelatedBlogs = ({ categoryId, excludeId, limit = 6 }) =>
 // (tùy dùng ở sidebar)
 // export const searchBlogsByTitle = (q) =>
 //   axiosInstance({ url: '/blogs', method: 'get', params: { search: q, limit: 8 } });
+
+export const fetchBlogsByCategory = ({ categoryId, page = 1, limit = 9, sort = 'newest', search }) =>
+  axiosInstance({
+    url: '/blogs',
+    method: 'get',
+    params: {
+      categoryId,
+      page,
+      limit,
+      sort,       // 'newest' | 'oldest' | 'popular' (BE của bạn đã dùng tham số sort)
+      search
+    }
+  });
+
+export const fetchCategories = () =>
+  axiosInstance({ url: '/categories', method: 'get' });

@@ -13,6 +13,7 @@ import BlogPage from './pages/guest/BlogPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminConsultations from './pages/admin/AdminConsultations';
+import BlogCategoryPage from './pages/guest/BlogCategoryPage';
 
 const App = () => {
   return (
@@ -28,6 +29,8 @@ const App = () => {
           <Route path="/home" element={<CustomerHome />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogDetailPage />} />
+          <Route path="blog/category/:id" element={<BlogCategoryPage />} />
+
         </Route>
 
         {/* ===== ADMIN (yêu cầu role admin) ===== */}
