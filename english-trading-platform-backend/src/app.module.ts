@@ -13,6 +13,7 @@ import { ReviewModule } from './review/review.module';
 import { TeacherModule } from './teacher/teacher.module';
 import { BlogModule } from './blog/blog.module';
 import { BlogCategoryModule } from './blog-category/blog-category.module';
+import { ConsultationModule } from './consultation/consultation.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { BlogCategoryModule } from './blog-category/blog-category.module';
     TeacherModule,
     BlogModule,
     BlogCategoryModule,
+    ConsultationModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],
