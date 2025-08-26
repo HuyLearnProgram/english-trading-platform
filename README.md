@@ -6,6 +6,7 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 1. [Features](#features)
 2. [Tech Stack](#tech-stack)
 3. [Installation](#installation)
+4. [Background](#background)
 
 ## Features
 
@@ -44,7 +45,7 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) installed
-- [PostgreSQL](https://www.mysql.org/) installed
+- [MySQL](https://www.mysql.org/) installed
 
 ### Backend Setup
 
@@ -98,3 +99,12 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 
 You can access the frontend at [http://localhost:3001](http://localhost:3001) for development. The backend can be accessed at [http://localhost:3000](http://localhost:3000) for development.
 
+## Background
+### Lecturer Search 
+![Lecturer Search](./background/lecturer.png)
+### Blog List
+![Blog List](./background/bloglist.png)
+### Blog View
+![Blog View](./background/blogdetail1.png)
+![Blog View](./background/blogdetail2.png)
+![Blog View](./background/blogdetail3.png)
