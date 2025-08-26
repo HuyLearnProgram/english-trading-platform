@@ -104,6 +104,7 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ![Lecturer Search](./background/lecturer.png)
 ### Blog List
 ![Blog List](./background/bloglist.png)
+![Blog List By Category](./background/blogcategory.png)
 ### Blog View
 ![Blog View](./background/blogdetail1.png)
 ![Blog View](./background/blogdetail2.png)
