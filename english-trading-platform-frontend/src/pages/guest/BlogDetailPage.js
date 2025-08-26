@@ -11,12 +11,11 @@ import {
   fetchRelatedBlogs,
   searchBlogsByTitle,
 } from '../../apis/blog';
-import { trackBanners } from '../../utils/constants';
+import { placeholderImg, trackBanners } from '../../utils/constants';
 
 import '../../styles/BlogPage.css';   // container + 2 cột (giữ nguyên)
 import '../../styles/BlogDetail.css'; // style detail nhẹ
 
-const placeholderImg = 'https://via.placeholder.com/768x432.png?text=No+Image';
 
 
 export default function BlogDetailPage() {
@@ -45,7 +44,7 @@ export default function BlogDetailPage() {
           setRelated(items);
         }
       } catch (e) {
-        navigate('/customer/blog', { replace: true });
+        navigate('/blog', { replace: true });
       } finally {
         mounted && setLoading(false);
       }
@@ -69,18 +68,18 @@ export default function BlogDetailPage() {
   const crumbs = useMemo(() => {
     if (!blog) {
       return [
-        { label: 'Trang chủ', to: '/customer/home' },
-        { label: 'Blog', to: '/customer/blog' },
+        { label: 'Trang chủ', to: '/home' },
+        { label: 'Blog', to: '/blog' },
       ];
     }
     const arr = [
-      { label: 'Trang chủ', to: '/customer/home' },
-      { label: 'Blog', to: '/customer/blog' },
+      { label: 'Trang chủ', to: '/home' },
+      { label: 'Blog', to: '/blog' },
     ];
     if (blog.category) {
       arr.push({
         label: blog.category.name,
-        to: `/customer/blog/category/${blog.category.slug ?? blog.category.id}`,
+        to: `/blog/category/${blog.category.slug ?? blog.category.id}`,
       });
     }
     arr.push({ label: blog.title });
@@ -123,7 +122,7 @@ export default function BlogDetailPage() {
           {blog.category && (
             <div className="detail-cat-pill">
               <Link
-                to={`/customer/blog/category/${blog.category.slug ?? blog.category.id}`}
+                to={`/blog/category/${blog.category.slug ?? blog.category.id}`}
                 className="pill"
               >
                 {blog.category.name}
@@ -186,7 +185,7 @@ export default function BlogDetailPage() {
             <AuthorCard
               author={blog.author}
               // có thể tuỳ biến URL nếu route của bạn khác:
-              getTeacherUrl={(t) => `/customer/teachers/${t.id}`}
+              getTeacherUrl={(t) => `/teachers/${t.id}`}
             />
           )}
 
@@ -223,7 +222,7 @@ export default function BlogDetailPage() {
               <ul className="search-results">
                 {searchResults.slice(0, 6).map((b) => (
                   <li key={b.id}>
-                    <Link to={`/customer/blog/${b.slug || b.id}`}>{b.title}</Link>
+                    <Link to={`/blog/${b.slug || b.id}`}>{b.title}</Link>
                   </li>
                 ))}
               </ul>
@@ -242,7 +241,10 @@ export default function BlogDetailPage() {
             </div>
 
             <ConsultationForm
-              teacherName={blog?.author?.fullName || ''}
+              teacherName={blog?.author?.fullName}
+              teacherId={blog?.author?.id}   // optional
+              blogSlug={blog?.slug}          // optional, tiện truy vết
+              source="blog"                  // optional, default đã là 'blog'
             />
           </div>
         </aside>

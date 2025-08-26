@@ -3,11 +3,8 @@ import { Link } from 'react-router-dom';
 import { fetchTopBlogsByCategory, searchBlogsByTitle } from '../../apis/blog';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import '../../styles/BlogPage.css';
-import { trackBanners } from '../../utils/constants';
+import { placeholderImg,trackBanners } from '../../utils/constants';
 
-const placeholderImg =
-  'https://via.placeholder.com/768x432.png?text=No+Image';
-// Banner “Lộ trình cá nhân hoá”
 
 
 const BlogPage = () => {
@@ -49,7 +46,7 @@ const BlogPage = () => {
     <div className="blog-wrapper">
       {/* Breadcrumb */}
       <Breadcrumb items={[
-        { label: 'Trang chủ', to: '/customer/home' },
+        { label: 'Trang chủ', to: '/home' },
         { label: 'Blog' }
       ]}/>
 
@@ -112,7 +109,7 @@ const BlogPage = () => {
               <ul className="search-results">
                 {searchResults.slice(0, 6).map((b) => (
                   <li key={b.id}>
-                    <Link to={`/customer/blog/${b.slug || b.id}`}>{b.title}</Link>
+                    <Link to={`/blog/${b.slug || b.id}`}>{b.title}</Link>
                   </li>
                 ))}
               </ul>
@@ -162,7 +159,7 @@ const CategoryBlock = ({ category }) => {
       <div className="hero-row">
         <Link
           className="hero-media"
-          to={`/customer/blog/${first.slug || first.id}`}
+          to={`/blog/${first.slug || first.id}`}
           title={first.title}
         >
           <img
@@ -173,7 +170,7 @@ const CategoryBlock = ({ category }) => {
         </Link>
         <div className="hero-info">
           <Link
-            to={`/customer/blog/${first.slug || first.id}`}
+            to={`/blog/${first.slug || first.id}`}
             className="hero-title link"
           >
             {first.title}
@@ -187,7 +184,7 @@ const CategoryBlock = ({ category }) => {
         {[second, third]
           .filter(Boolean)
           .map((b) => (
-            <Link key={b.id} to={`/customer/blog/${b.slug || b.id}`} className="subcard">
+            <Link key={b.id} to={`/blog/${b.slug || b.id}`} className="subcard">
               <div className="thumb">
                 <img src={b?.introImage?.src || placeholderImg} alt={b.title} loading="lazy" />
               </div>
@@ -199,7 +196,7 @@ const CategoryBlock = ({ category }) => {
       </div>
 
       <div className="view-all-wrap">
-        <Link to={`/customer/blog/category/${id}`} className="view-all">
+        <Link to={`/blog/category/${id}`} className="view-all">
           Xem tất cả
           <svg viewBox="0 0 448 512" width="16" height="16" aria-hidden="true">
             <path

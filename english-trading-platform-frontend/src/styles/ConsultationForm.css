@@ -108,3 +108,51 @@
   .cf-submit:active { transform: translateY(1px); }
   .cf-submit:disabled { opacity: .7; cursor: default; }
   
+  /* ========== Modal overlay (dùng trên trang Home) ========== */
+  .cf-modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 9999;
+  }
+
+  .cf-modal{
+    width: 100%;
+    max-width: 480px;
+    border-radius: 16px;
+    background: #e7f6ef;       /* nền xanh lá nhạt đồng bộ với inline */
+    border: 1px solid #c7eadb;
+    padding: 14px;
+    position: relative;
+    animation: cfZoomIn .12s ease-out;
+  }
+
+  .cf-modal .cf-card{ border-radius: 14px; }
+  .cf-close{
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 32px; height: 32px;
+    border-radius: 9999px;
+    border: 1px solid #c7eadb;
+    background: #fff;
+    color: #065f46;
+    cursor: pointer;
+  }
+  .cf-close:hover{ background:#ecfdf5; }
+
+  @keyframes cfZoomIn { from { transform: scale(.98); opacity: .6; } to { transform: scale(1); opacity: 1; } }
+
+  /* Thông báo lỗi khối (server) */
+  .cf-error-block{
+    background: #fef2f2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }

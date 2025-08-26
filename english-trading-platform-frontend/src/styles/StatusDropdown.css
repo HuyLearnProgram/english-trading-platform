@@ -1,0 +1,40 @@
+/* ===== Dropdown trạng thái ===== */
+.status-dd { position: relative; display: inline-flex; justify-content: center; }
+
+.status-dd-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700;
+  padding: 4px 10px; border-radius: 9999px;
+  border: 1px solid #e5e7eb; background: #fff; cursor: pointer;
+}
+.status-dd-btn svg { pointer-events: none; }
+
+/* màu giống badge */
+.status-dd-btn.new       { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+.status-dd-btn.contacted { background: #fff7ed; color: #92400e; border-color: #fed7aa; }
+.status-dd-btn.scheduled { background: #f5f3ff; color: #5b21b6; border-color: #ddd6fe; }
+.status-dd-btn.done      { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+.status-dd-btn.canceled  { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+
+/* Popup: nằm ngay dưới & căn giữa badge */
+.status-dd-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 180px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0,0,0,.08);
+  padding: 6px; z-index: 20;
+
+  list-style: none;   /* bỏ chấm */
+  margin: 0;
+}
+.status-dd-menu li { list-style: none; }
+
+.status-dd-item {
+  width: 100%; text-align: left;
+  padding: 8px 10px; border-radius: 6px;
+  background: transparent; border: none; cursor: pointer; font-size: 14px;
+}
+.status-dd-item:hover { background: #f3f4f6; }

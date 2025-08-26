@@ -64,3 +64,15 @@ export const trackBanners = [
       alt: 'Học tiếng Anh giao tiếp cùng Antoree Talk',
     },
   ];
+
+
+export  const placeholderImg = 'https://via.placeholder.com/768x432.png?text=No+Image';
+
+export const STATUS_OPTIONS = [
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'new', label: 'Mới' },
+  { value: 'contacted', label: 'Đã liên hệ' },
+  { value: 'scheduled', label: 'Đã đặt lịch' },
+  { value: 'done', label: 'Hoàn tất' },
+  { value: 'canceled', label: 'Huỷ' },
+];
