@@ -112,8 +112,14 @@ export class BlogService {
     if (q.categorySlug) qb.andWhere('c.slug = :cslug', { cslug: q.categorySlug });
 
     switch (q.sort) {
-      case 'popular': qb.orderBy('b.views', 'DESC'); break;
-      default:        qb.orderBy('b.publishedAt', 'DESC');
+      case 'popular':
+        qb.orderBy('b.views', 'DESC');
+        break;
+      case 'oldest':
+        qb.orderBy('b.publishedAt', 'ASC');
+        break;
+      default:
+        qb.orderBy('b.publishedAt', 'DESC');
     }
 
     const [items, total] = await qb.skip((page-1)*limit).take(limit).getManyAndCount();

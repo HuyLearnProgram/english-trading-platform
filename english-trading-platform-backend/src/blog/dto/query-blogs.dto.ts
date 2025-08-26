@@ -10,5 +10,5 @@ export class QueryBlogsDto {
   @IsInt()  @Type(() => Number) @IsOptional() categoryId?: number;
   @Type(() => Number) @IsOptional() page?: number;
   @Type(() => Number) @IsOptional() limit?: number;
-  @IsString() @IsOptional() sort?: 'newest'|'popular';
+  @IsString() @IsOptional() sort?: 'newest'|'popular'|'oldest';
 }

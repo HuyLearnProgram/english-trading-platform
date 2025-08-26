@@ -17,7 +17,7 @@ export class BlogCategoryController {
       return this.service.updateCategory(id, dto);
     }
   
-
-  @Get('top-posts')
-  getCategoriesWithTopPosts() { return this.service.findAllWithTopPosts(); }
+    @Get('top-posts')
+    getCategoriesWithTopPosts() { return this.service.findAllWithTopPosts(); }
+    
 }
