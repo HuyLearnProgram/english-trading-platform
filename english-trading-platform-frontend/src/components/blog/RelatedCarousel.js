@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import "../../styles/RelatedCarousel.css";
+import "@styles/RelatedCarousel.css";
 
 const chunk2 = (arr) => {
   const out = [];

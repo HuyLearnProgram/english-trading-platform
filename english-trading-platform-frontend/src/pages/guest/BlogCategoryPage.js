@@ -1,15 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Breadcrumb from '../../components/common/Breadcrumb';
-import { fetchBlogsByCategory, fetchCategories } from '../../apis/blog';
-import { placeholderImg } from '../../utils/constants';
-import '../../styles/BlogCategoryPage.css';
+import Breadcrumb from '@components/common/Breadcrumb';
+import { fetchBlogsByCategory, fetchCategories } from '@apis/blog';
+import { placeholderImg, SORTS } from '@utils/constants';
+import '@styles/BlogCategoryPage.css';
 
-const SORTS = [
-  { value: 'newest', label: 'Mới nhất' },
-  { value: 'oldest', label: 'Cũ nhất' },
-  { value: 'popular', label: 'Phổ biến' },
-];
+
 
 export default function BlogCategoryPage() {
   const { id } = useParams();

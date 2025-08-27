@@ -4,12 +4,12 @@ import {
   listConsultations,
   updateConsultation,
   deleteConsultation,
-} from '../../apis/consultation';
-import { STATUS_OPTIONS } from '../../utils/constants';
+} from '@apis/consultation';
+import { STATUS_OPTIONS } from '@utils/constants';
 
-import ConsultationModal from '../../components/admin/ConsultationModal';
-import StatusDropdown from '../../components/admin/StatusDropdown';
-import '../../styles/AdminModal.css';
+import ConsultationModal from '@components/admin/ConsultationModal';
+import StatusDropdown from '@components/admin/StatusDropdown';
+import '@styles/AdminModal.css';
 
 export default function AdminConsultations() {
   const [data, setData] = React.useState([]);

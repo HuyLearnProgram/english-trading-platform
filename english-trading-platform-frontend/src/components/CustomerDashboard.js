@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, NavLink } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '@contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import '../styles/CustomerDashboard.css';
-import '../styles/CustomerHome.css';
+import '@styles/CustomerDashboard.css';
+import '@styles/CustomerHome.css';
 import Footer from './Footer';
 import ConsultationForm from './blog/ConsultationForm';
 

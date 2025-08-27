@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../../styles/AuthorCard.css";
+import "@styles/AuthorCard.css";
 
 const FALLBACK =
   "https://via.placeholder.com/240x240.png?text=Teacher";

@@ -76,3 +76,9 @@ export const STATUS_OPTIONS = [
   { value: 'done', label: 'Hoàn tất' },
   { value: 'canceled', label: 'Huỷ' },
 ];
+
+export const SORTS = [
+  { value: 'newest', label: 'Mới nhất' },
+  { value: 'oldest', label: 'Cũ nhất' },
+  { value: 'popular', label: 'Phổ biến' },
+];

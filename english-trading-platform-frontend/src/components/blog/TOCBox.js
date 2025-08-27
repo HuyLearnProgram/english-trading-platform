@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import "../../styles/TOCBox.css"; // Ensure you have the correct CSS for styling
+import "@styles/TOCBox.css"; // Ensure you have the correct CSS for styling
 
 const TOCItem = ({ item, level = 0 }) => (
   <li className={`tocb-item level-${level}`}>

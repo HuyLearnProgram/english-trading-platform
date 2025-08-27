@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/Figure.css";
+import "@styles/Figure.css";
 
 /**
  * Hình minh hoạ trong bài viết

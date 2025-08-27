@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchTopBlogsByCategory, searchBlogsByTitle } from '../../apis/blog';
-import Breadcrumb from '../../components/common/Breadcrumb';
-import '../../styles/BlogPage.css';
-import { placeholderImg,trackBanners } from '../../utils/constants';
-
-
+import { fetchTopBlogsByCategory, searchBlogsByTitle } from '@apis/blog';
+import Breadcrumb from '@components/common/Breadcrumb';
+import '@styles/BlogPage.css';
+import { placeholderImg,trackBanners } from '@utils/constants';
 
 const BlogPage = () => {
   const [categories, setCategories] = useState([]);

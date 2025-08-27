@@ -1,5 +1,5 @@
 import React from 'react';
-import { listConsultations } from '../../apis/consultation';
+import { listConsultations } from '@apis/consultation';
 import { toast } from 'react-toastify';
 
 export default function AdminOverview() {

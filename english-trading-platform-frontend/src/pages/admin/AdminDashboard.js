@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import '../../styles/Admin.css';
+import '@styles/Admin.css';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();

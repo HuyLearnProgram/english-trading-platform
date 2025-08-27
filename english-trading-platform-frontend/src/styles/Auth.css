@@ -1,76 +1,205 @@
-/* src/components/Auth.css */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f5f5f5;
-    padding: 20px;
-  }
-  
-  .auth-form {
-    background: #fff;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-  }
-  
-  .auth-form h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .auth-input {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-  }
-  
-  .auth-input:focus {
-    border-color: #007bff;
-    outline: none;
-  }
-  
-  .auth-button {
-    width: 100%;
-    padding: 12px 15px;
-    background-color: #007bff;
-    border: none;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .auth-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .auth-switch {
-    margin-top: 20px;
-    font-size: 14px;
-  }
-  
-  .auth-switch a {
-    color: #007bff;
-    text-decoration: none;
-  }
-  
-  .auth-switch a:hover {
-    text-decoration: underline;
-  }
-  
-  .auth-error {
-    color: red;
-    margin-bottom: 10px;
-    font-size: 14px;
-  }
-  
+:root {
+  --green: #14b24c;
+  --green-50: #e9fdf0;
+  --text: #0f172a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  color: var(--text);
+}
+@media (min-width: 1024px) {
+  .login-page { grid-template-columns: 1fr 1fr; }
+}
+
+/* LEFT */
+.panel-left {
+  background: var(--green-50);
+  display: none;
+  position: relative;
+}
+@media (min-width: 1024px) { .panel-left { display: block; } }
+
+.left-illustration {
+  position: absolute;
+  inset: 0 0 35% 0;
+  background: url('https://mama.antoree.com/assets/bg-signIn-420dc1d2.png') no-repeat bottom/cover;
+  /* nếu không có ảnh, cứ để trống; phần tải app ở dưới vẫn hiển thị */
+}
+.left-download {
+  position: absolute;
+  inset: auto 4rem 3rem 4rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.left-text { flex: 1; text-align: right; }
+.left-title { font-weight: 600; font-size: 1.1rem; margin-bottom: .25rem; }
+.left-sub { color: var(--muted); margin-bottom: .75rem; }
+.store-badges { display: flex; gap: .75rem; justify-content: flex-end; }
+.store-badges img { height: 40px; display: block; }
+.left-qr { width: 40%; text-align: center; }
+.left-qr img { width: 120px; height: 120px; object-fit: contain; margin: 0 auto; }
+.qr-caption { margin-top: .25rem; color: var(--muted); }
+
+/* RIGHT */
+.panel-right {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: #fff;
+}
+.right-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+}
+
+.logo { height: 28px; }
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .25rem .5rem;
+  border: none;
+  background: transparent;
+  color: var(--green);
+  font-weight: 600;
+  cursor: pointer;
+}
+.lang-btn svg { fill: currentColor; }
+
+.login-title { margin: 1rem 0 .75rem; font-size: 1.5rem; font-weight: 600; }
+
+.login-form { display: grid; gap: .75rem; }
+.form-error { color: #dc2626; background: #fee2e2; border: 1px solid #fecaca; padding: .5rem .75rem; border-radius: .5rem; }
+
+.field { display: grid; gap: .375rem; }
+.field-label { font-weight: 600; }
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .375rem .5rem .375rem 2.25rem;
+  background: #fff;
+}
+.input-group input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: .95rem;
+  padding: .25rem 0;
+}
+.input-icon {
+  position: absolute;
+  left: .6rem;
+  display: grid;
+  place-items: center;
+  color: #3f3f46;
+}
+.input-icon svg { fill: currentColor; }
+
+.pw-toggle {
+  margin-left: .25rem;
+  background: transparent;
+  border: none;
+  color: var(--green);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.btn-login {
+  margin-top: .25rem;
+  width: 100%;
+  height: 44px;
+  border-radius: .5rem;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-login:hover { filter: brightness(0.95); }
+
+.btn-link {
+  margin: .5rem auto 0;
+  display: block;
+  background: transparent;
+  border: none;
+  color: var(--green);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.help-links {
+  margin-top: .75rem;
+  display: flex;
+  gap: .75rem;
+  justify-content: center;
+  align-items: center;
+}
+.help-links .link {
+  color: var(--green);
+  font-weight: 500;
+  text-decoration: none;
+}
+.help-links .divider {
+  width: 2px;
+  height: 14px;
+  background: var(--green);
+}
+/* --- khối brand mới (xếp dọc) --- */
+/* Khối brand */
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: .5rem;   /* khoảng cách với tiêu đề Login */
+  height: 10rem;
+  justify-content: space-between;
+}
+
+/* Khung logo cố định chiều cao */
+.brand-logo {
+  width: 100%;
+  height: clamp(64px, 10vw, 96px); /* responsive: 64–96px */
+  position: relative;
+  overflow: hidden;                 /* cắt phần vượt quá */
+}
+
+/* Ảnh lấp đầy khung, crop nếu cần */
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                /* quan trọng */
+  object-position: center;          /* crop giữa */
+  display: block;
+}
+
+/* Ngôn ngữ tách riêng bên dưới */
+.brand-lang {
+  display: flex;
+  align-items: center;
+}
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .25rem .5rem;
+  border: none;
+  background: transparent;
+  color: var(--green);
+  font-weight: 600;
+  cursor: pointer;
+}
+.lang-btn svg { fill: currentColor; }

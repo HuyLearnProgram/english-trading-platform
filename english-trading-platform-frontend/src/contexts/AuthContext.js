@@ -1,63 +1,123 @@
-// src/contexts/AuthContext.js
 import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext();
 
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL, // http://localhost:3000
+  withCredentials: true,
+});
+
+// Parse JWT
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);     // { token, id }
-  const [role, setRole] = useState(null);     // 'admin' | 'businessowner' | 'customer'
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
   const [initializing, setInitializing] = useState(true);
-  const apiUrl = process.env.REACT_APP_API_URL;
 
-  // Khôi phục phiên đăng nhập khi load app
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    const savedRole = localStorage.getItem('role');
-
-    if (token && userId) {
-      setUser({ token, id: Number(userId) });
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  const applyAccessToken = useCallback((accessToken) => {
+    if (!accessToken) {
+      delete api.defaults.headers.common.Authorization;
+      setUser(null);
+      setRole(null);
+      return;
     }
-    if (savedRole) setRole(savedRole);
-
-    setInitializing(false);
+    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+    const payload = parseJwt(accessToken);
+    if (payload) {
+      setUser({ id: payload.sub, email: payload.email });
+      setRole(payload.role);
+    }
   }, []);
 
-  const login = useCallback(
-    async (email, password) => {
-      const { data } = await axios.post(`${apiUrl}/auth/login`, { email, password });
-      const { access_token, id, role: r } = data;
+  // ---- Interceptor: auto refresh 1 lần, KHÔNG cho chính /auth/refresh
+  let refreshPromise = null;
 
-      setUser({ token: access_token, id });
-      setRole(r);
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(
+      (res) => res,
+      async (error) => {
+        const original = error.config;
+        const status = error?.response?.status;
 
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('userId', String(id));
-      localStorage.setItem('role', r);
+        // Nếu không có response -> lỗi mạng, bỏ qua
+        if (!status) return Promise.reject(error);
 
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    },
-    [apiUrl]
-  );
+        const url = String(original?.url ?? '');
+        const isAuthEndpoint =
+          url.includes('/auth/refresh') ||
+          url.includes('/auth/login') ||
+          url.includes('/auth/logout');
+
+        // Chỉ xử lý 401 cho request không thuộc auth và chưa retry
+        if (status !== 401 || isAuthEndpoint || original?._retry) {
+          return Promise.reject(error);
+        }
+
+        original._retry = true;
+        try {
+          if (!refreshPromise) {
+            refreshPromise = api.post('/auth/refresh');
+          }
+          const { data } = await refreshPromise.finally(() => {
+            refreshPromise = null;
+          });
+
+          applyAccessToken(data.access_token);
+          original.headers = {
+            ...(original.headers || {}),
+            Authorization: `Bearer ${data.access_token}`,
+          };
+          return api.request(original);
+        } catch (e) {
+          // refresh thất bại -> coi như đăng xuất
+          applyAccessToken(null);
+          return Promise.reject(e);
+        }
+      }
+    );
+
+    return () => api.interceptors.response.eject(interceptor);
+  }, [applyAccessToken]);
+
+  // Khởi động app: thử refresh 1 lần (nếu chưa có cookie sẽ nhận 401 và dừng)
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.post('/auth/refresh');
+        applyAccessToken(data.access_token);
+      } catch {
+        // chưa có cookie hoặc cookie hết hạn -> bỏ qua
+      } finally {
+        setInitializing(false);
+      }
+    })();
+  }, [applyAccessToken]);
+
+  const login = useCallback(async (emailOrPhone, password) => {
+    const { data } = await api.post('/auth/login', { email: emailOrPhone, password });
+    applyAccessToken(data.access_token);
+  }, [applyAccessToken]);
 
   const register = useCallback(
     async (email, password, r) => {
-      await axios.post(`${apiUrl}/auth/register`, { email, password, role: r });
+      await api.post('/auth/register', { email, password, role: r });
       await login(email, password);
     },
-    [apiUrl, login]
+    [login]
   );
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setRole(null);
-    delete axios.defaults.headers.common['Authorization'];
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('role');
-  }, []);
+  const logout = useCallback(async () => {
+    try { await api.post('/auth/logout'); } catch {}
+    applyAccessToken(null);
+  }, [applyAccessToken]);
 
   const value = useMemo(
     () => ({ user, role, initializing, login, register, logout }),

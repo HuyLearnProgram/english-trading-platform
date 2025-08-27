@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import "../../styles/CustomerHome.css";
-import { TeacherCard } from "../../components/teacher/TeacherCard";
-import { apiGetTeachers } from "../../apis/teacher";
-import { TIME_OF_DAY, DAYS, TAGS, GENDERS, COUNTRIES, CERTS_LIST} from "../../utils/constants"
+import "@styles/CustomerHome.css";
+import { TeacherCard } from "@components/teacher/TeacherCard";
+import { apiGetTeachers } from "@apis/teacher";
+import { TIME_OF_DAY, DAYS, TAGS, GENDERS, COUNTRIES, CERTS_LIST} from "@utils/constants";
 
 
 

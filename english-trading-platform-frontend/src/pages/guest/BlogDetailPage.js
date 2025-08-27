@@ -1,20 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import Breadcrumb from '../../components/common/Breadcrumb';
-import TOCBox from '../../components/blog/TOCBox';
-import AuthorCard from '../../components/blog/AuthorCard';
-import Figure from "../../components/blog/Figure";
-import RelatedCarousel from "../../components/blog/RelatedCarousel";
-import ConsultationForm from '../../components/blog/ConsultationForm';
+import Breadcrumb from '@components/common/Breadcrumb';
+import TOCBox from '@components/blog/TOCBox';
+import AuthorCard from '@components/blog/AuthorCard';
+import Figure from "@components/blog/Figure";
+import RelatedCarousel from "@components/blog/RelatedCarousel";
+import ConsultationForm from '@components/blog/ConsultationForm';
 import {
   fetchBlogBySlug,
   fetchRelatedBlogs,
   searchBlogsByTitle,
-} from '../../apis/blog';
-import { placeholderImg, trackBanners } from '../../utils/constants';
+} from '@apis/blog';
+import { placeholderImg, trackBanners } from '@utils/constants';
 
-import '../../styles/BlogPage.css';   // container + 2 cột (giữ nguyên)
-import '../../styles/BlogDetail.css'; // style detail nhẹ
+import '@styles/BlogPage.css';   // container + 2 cột (giữ nguyên)
+import '@styles/BlogDetail.css'; // style detail nhẹ
 
 
 
