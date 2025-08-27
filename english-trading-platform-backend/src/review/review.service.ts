@@ -5,65 +5,49 @@ import { Repository, In } from 'typeorm';
 import { Review } from './review.entity';
 import { CreateReviewDto, UpdateReviewDto } from './dto';
 import { User } from '../users/user.entity';
+import { Teacher } from 'src/teacher/teacher.entity';
 
+// src/review/review.service.ts  (chỉnh toàn bộ theo Teacher)
 @Injectable()
 export class ReviewService {
   constructor(
-    @InjectRepository(Review)
-    private reviewRepository: Repository<Review>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(Review) private reviewRepo: Repository<Review>,
+    @InjectRepository(User)   private userRepo: Repository<User>,
+    @InjectRepository(Teacher) private teacherRepo: Repository<Teacher>,
   ) {}
 
-  async create(createReviewDto: CreateReviewDto): Promise<Review> {
-    const user = await this.userRepository.findOneBy({ id: createReviewDto.userId });
+  async create(dto: CreateReviewDto) {
+    const user = await this.userRepo.findOneBy({ id: dto.userId });
+    if (!user) throw new NotFoundException('User not found');
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const teacher = await this.teacherRepo.findOneBy({ id: dto.teacherId });
+    if (!teacher) throw new NotFoundException('Teacher not found');
 
-    const review = new Review();
-    review.rating = createReviewDto.rating;
-    review.reviewText = createReviewDto.reviewText;
-    review.user = user;
-
-    return this.reviewRepository.save(review);
-  }
-
-  async updateReview(id: number, updateReviewDto: UpdateReviewDto): Promise<Review> {
-    const review = await this.reviewRepository.findOneBy({ id });
-    if (!review) {
-      throw new NotFoundException('Review not found');
-    }
-
-    if (updateReviewDto.rating !== undefined) {
-      review.rating = updateReviewDto.rating;
-    }
-    if (updateReviewDto.reviewText !== undefined) {
-      review.reviewText = updateReviewDto.reviewText;
-    }
-    return this.reviewRepository.save(review);
-  }
-
-  async findByOwner(ownerId: number): Promise<Review[]> {
-
-    const reviews = await this.reviewRepository.find({
-      where: { },
-      relations: ['user', 'service'],
+    const r = this.reviewRepo.create({
+      rating: dto.rating,
+      reviewText: dto.reviewText,
+      courseName: dto.courseName,
+      totalHours: dto.totalHours,
+      user,
+      teacher,
     });
-
-    console.log('Reviews:', reviews); 
-    return reviews;
+    return this.reviewRepo.save(r);
   }
-  async findByService(serviceId: number): Promise<Review[]> {
 
-  
-    const reviews = await this.reviewRepository.find({
-      where: { },
-      relations: ['user', 'service'],
+  async updateReview(id: number, dto: UpdateReviewDto) {
+    const r = await this.reviewRepo.findOne({ where: { id }, relations: ['user','teacher'] });
+    if (!r) throw new NotFoundException('Review not found');
+    if (dto.rating != null) r.rating = dto.rating;
+    if (dto.reviewText != null) r.reviewText = dto.reviewText;
+    if (dto.ownerReply != null) r.ownerReply = dto.ownerReply;
+    return this.reviewRepo.save(r);
+  }
+
+  async findByTeacher(teacherId: number) {
+    return this.reviewRepo.find({
+      where: { teacher: { id: teacherId } },
+      relations: ['user'],
+      order: { createdAt: 'DESC' },
     });
-  
-    return reviews;
   }
-  
 }

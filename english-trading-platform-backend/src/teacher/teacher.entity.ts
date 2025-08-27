@@ -60,6 +60,19 @@ export class Teacher {
   @OneToMany(() => Blog, (b) => b.author)
   blogs: Blog[];
 
+  @Column('json', { nullable: true })
+  certificates?: Array<{ name: string; fileUrl?: string; verified?: boolean }>;
+
+  @Column('json', { nullable: true })
+  education?: Array<{ title: string; org: string; start?: string; end?: string; verified?: boolean }>;
+
+  @Column('json', { nullable: true })
+  experiences?: Array<{ title: string; company: string; start?: string; end?: string; desc?: string }>;
+
+  @Column({ nullable: true }) demoVideoUrl?: string;          // video giới thiệu
+  @Column({ nullable: true }) sampleClassVideoUrl?: string;   // “Xem lớp học mẫu”
+  @Column({ nullable: true }) audioUrl?: string;              // file audio
+
   @CreateDateColumn()
   createdAt: Date;
 

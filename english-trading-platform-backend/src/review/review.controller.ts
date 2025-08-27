@@ -3,38 +3,27 @@ import { Controller, Post, Body, Get, Param, Patch, ParseIntPipe } from '@nestjs
 import { ReviewService } from './review.service';
 import { CreateReviewDto, UpdateReviewDto } from './dto';
 
+// src/review/review.controller.ts (đổi routes)
 @Controller('reviews')
 export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+  constructor(private readonly srv: ReviewService) {}
 
   @Post()
-  async create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewService.create(createReviewDto);
-  }
+  create(@Body() dto: CreateReviewDto) { return this.srv.create(dto); }
 
   @Patch(':id')
-  async updateReview(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateReviewDto: UpdateReviewDto
-  ) {
-    return this.reviewService.updateReview(id, updateReviewDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateReviewDto) {
+    return this.srv.updateReview(id, dto);
   }
 
   @Patch(':id/reply')
-  async replyToReview(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('ownerReply') ownerReply: string
-  ) {
-    return this.reviewService.updateReview(id, { ownerReply });
+  reply(@Param('id', ParseIntPipe) id: number, @Body('ownerReply') ownerReply: string) {
+    return this.srv.updateReview(id, { ownerReply });
   }
 
-  @Get('owner/:ownerId')
-  async findByOwner(@Param('ownerId', ParseIntPipe) ownerId: number) {
-    return this.reviewService.findByOwner(ownerId);
+  @Get('teacher/:teacherId')
+  findByTeacher(@Param('teacherId', ParseIntPipe) teacherId: number) {
+    return this.srv.findByTeacher(teacherId);
   }
-  @Get('service/:serviceId')
-async findByService(@Param('serviceId', ParseIntPipe) serviceId: number) {
-  return this.reviewService.findByService(serviceId);
 }
 
-}

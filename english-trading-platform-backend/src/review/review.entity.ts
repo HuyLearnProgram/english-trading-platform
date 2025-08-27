@@ -1,4 +1,4 @@
-// src/reviews/review.entity.ts
+// src/review/review.entity.ts
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Teacher } from '../teacher/teacher.entity';
@@ -9,15 +9,24 @@ export class Review {
   id: number;
 
   @Column('int')
-  rating: number; // 1..5
+  rating: number;
 
   @Column('text')
   reviewText: string;
 
-  @ManyToOne(() => User, user => user.reviews, { onDelete: 'CASCADE' })
+  @Column({ nullable: true })
+  courseName?: string;
+
+  @Column({ nullable: true })
+  totalHours?: string;
+
+  @Column({ nullable: true })
+  ownerReply?: string;
+
+  @ManyToOne(() => User, u => u.reviews, { onDelete: 'CASCADE' })
   user: User;
 
-  @ManyToOne(() => Teacher, teacher => teacher.reviews, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Teacher, t => t.reviews, { onDelete: 'CASCADE' })
   teacher: Teacher;
 
   @CreateDateColumn()

@@ -1,17 +1,24 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-
+// src/teacher/dto/create-teacher.dto.ts
+import { IsString, IsOptional, IsNumber, IsArray, IsObject } from 'class-validator';
 
 export class CreateTeacherDto {
-  @IsString() @IsNotEmpty() fullName: string;
+  @IsString() fullName: string;
   @IsString() @IsOptional() avatarUrl?: string;
   @IsString() @IsOptional() headline?: string;
   @IsString() @IsOptional() bio?: string;
-  @IsString() @IsOptional() country?: string;        // có thể là 1 country hoặc CSV
-  @IsString() @IsOptional() specialties?: string;    // CSV: “IELTS, Speaking”
+  @IsString() @IsOptional() country?: string;
+  @IsString() @IsOptional() specialties?: string;
   @IsNumber() @IsOptional() hourlyRate?: number;
 
-  // thêm các field để BE lưu được
-  @IsString() @IsOptional() gender?: string;         // “Male,Female” hoặc 1 giá trị
-  @IsString() @IsOptional() level?: string;          // “Beginner,Intermediate” (CSV)
-  @IsString() @IsOptional() certs?: string;          // “IELTS,TOEFL” (CSV)
+  @IsString() @IsOptional() gender?: string;
+  @IsString() @IsOptional() level?: string;
+  @IsString() @IsOptional() certs?: string;
+
+  @IsObject() @IsOptional() weeklyAvailability?: any;
+  @IsArray()  @IsOptional() certificates?: any[];
+  @IsArray()  @IsOptional() education?: any[];
+  @IsArray()  @IsOptional() experiences?: any[];
+  @IsString() @IsOptional() demoVideoUrl?: string;
+  @IsString() @IsOptional() sampleClassVideoUrl?: string;
+  @IsString() @IsOptional() audioUrl?: string;
 }

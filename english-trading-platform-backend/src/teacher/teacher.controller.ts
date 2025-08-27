@@ -32,4 +32,8 @@ export class TeachersController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }
+  @Get(':id/public')
+  publicProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.service.getPublicProfile(id);
+  }
 }

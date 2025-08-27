@@ -6,6 +6,7 @@ import { Teacher } from './teacher.entity';
 import { QueryTeachersDto } from './dto/query-teacher.dto';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { Review } from 'src/review/review.entity';
 
 const parseCSV = (v?: string) =>
   (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []) as string[];
@@ -84,7 +85,9 @@ const matchAvailability = (
 
 @Injectable()
 export class TeachersService {
-  constructor(@InjectRepository(Teacher) private readonly repo: Repository<Teacher>) {}
+  constructor(@InjectRepository(Teacher) private readonly repo: Repository<Teacher>,
+  @InjectRepository(Review) private readonly reviewRepo: Repository<Review>,
+) {}
 
   async create(dto: CreateTeacherDto) {
     const t = this.repo.create({
@@ -213,6 +216,31 @@ export class TeachersService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
+    };
+  }
+
+  async getPublicProfile(id: number) {
+    const teacher = await this.repo.findOne({ where: { id } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+  
+    const { avg, count } = await this.reviewRepo
+      .createQueryBuilder('r')
+      .select('AVG(r.rating)', 'avg')
+      .addSelect('COUNT(*)', 'count')
+      .where('r.teacherId = :id', { id })
+      .getRawOne<{ avg: string; count: string }>();
+  
+    const reviews = await this.reviewRepo.find({
+      where: { teacher: { id } },
+      relations: ['user'],
+      order: { createdAt: 'DESC' },
+      take: 20, // lấy 20 cái gần nhất
+    });
+  
+    return {
+      teacher,
+      rating: { average: Number(avg ?? 0), total: Number(count ?? 0) },
+      reviews,
     };
   }
 }
