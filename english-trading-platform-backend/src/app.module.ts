@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
@@ -21,14 +22,22 @@ import { ConsultationModule } from './consultation/consultation.module';
       isGlobal: true, 
       envFilePath: '.env',
     }),
+    RedisModule.forRootAsync({
+      useFactory: (cs: ConfigService) => ({
+        type: 'single',
+        options: {
+          host: cs.get('REDIS_HOST'),
+          port: Number(cs.get('REDIS_PORT')),
+          username: cs.get('REDIS_USERNAME') || undefined,
+          password: cs.get('REDIS_PASSWORD') || undefined,
+          tls: cs.get('REDIS_TLS') === 'true' ? {} : undefined,
+        },
+      }),
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        console.log('DATABASE_HOST:', configService.get<string>('DATABASE_HOST'));
-        console.log('DATABASE_PORT:', configService.get<number>('DATABASE_PORT'));
-        console.log('DATABASE_USERNAME:', configService.get<string>('DATABASE_USERNAME'));
-        console.log('DATABASE_PASSWORD:', configService.get<string>('DATABASE_PASSWORD'));
-        console.log('DATABASE_NAME:', configService.get<string>('DATABASE_NAME'));
         
         return {
           type: 'mysql',
