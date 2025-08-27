@@ -62,11 +62,28 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 
 3. Set up the environment variables in a `.env` file:
     ```plaintext
-    DATABASE_HOST=
-    DATABASE_PORT=
-    DATABASE_USERNAME=
-    DATABASE_PASSWORD=
-    DATABASE_NAME=
+    DATABASE_HOST=localhost
+    DATABASE_PORT=3306
+    DATABASE_USERNAME=root
+    DATABASE_PASSWORD=123456
+    DATABASE_NAME=booking_db
+    PORT=3000
+    
+    # JWT Config
+    JWT_ACCESS_SECRET="X7+HdDTQjSdnyGc2ALiumB7tVD6+g+eWcefZ4blz9BQ="
+    JWT_ACCESS_TTL=15m
+    
+    JWT_REFRESH_SECRET="Vq8a8l3e5q5kq0m9x1C2pUTf0Cj4Qe7m2vK9yZ0w3sA="
+    JWT_REFRESH_TTL=30d   
+    
+    # Redis Config
+    REDIS_HOST=
+    REDIS_PORT=
+    REDIS_USERNAME=
+    REDIS_PASSWORD=
+    
+    REDIS_TLS=false
+    NODE_ENV=development
     ```
 
 4. Run the backend server (default port 3000):
@@ -99,6 +116,9 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 
 You can access the frontend at [http://localhost:3001](http://localhost:3001) for development. The backend can be accessed at [http://localhost:3000](http://localhost:3000) for development.
 
+## Login
+### Login
+![Login](./background/login.png)
 ## Background
 ### Lecturer Search 
 ![Lecturer Search](./background/lecturer.png)
