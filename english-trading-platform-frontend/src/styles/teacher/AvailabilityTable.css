@@ -1,0 +1,4 @@
+.avail { width:100%; border-collapse:collapse; }
+.avail th, .avail td { border:1px solid #edf2f7; padding:10px; vertical-align:top; }
+.slot { background:#f3f4f6; padding:4px 6px; border-radius:6px; margin-bottom:6px; display:inline-block; }
+.muted { color:#6b7280; }

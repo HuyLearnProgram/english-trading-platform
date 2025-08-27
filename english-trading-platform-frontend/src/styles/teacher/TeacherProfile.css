@@ -1,0 +1,62 @@
+:root{
+  --green: #14b24c;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --text: #0f172a;
+
+  --header-h: 70px;
+  --nav-h: 48px;
+}
+
+.tp-container { max-width:1080px; margin:0 auto; padding:16px; color:var(--text); }
+.tp-grid { display:grid; grid-template-columns: 1fr 320px; gap:20px; }
+@media (max-width: 1024px){ .tp-grid{ grid-template-columns:1fr; } }
+
+.right { position:sticky; top:16px; align-self:start; }
+.video-card { margin-top:12px; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.video-card video { width:100%; height:auto; display:block; }
+
+.section { margin-bottom:22px; }
+.section .list { margin:8px 0 0 0; padding:0; list-style:none; }
+.section .list li { padding:6px 0; }
+.verified { color:var(--green); margin-left:8px; font-weight:600; }
+.verified-line { color:var(--green); margin-top:6px; }
+.edu h3 { font-size:18px; margin-bottom:2px; }
+.edu h5 { color:#333; margin:6px 0; }
+.chips { display:flex; gap:10px; flex-wrap:wrap; }
+.chip { background:#f1f5f9; border-radius:6px; padding:6px 10px; }
+.exp-list { list-style:none; padding:0; margin:0; }
+.exp-list li { margin-bottom:16px; }
+.exp-list .year { margin-left:8px; color:#555; }
+.desc { white-space:pre-line; color:#333; }
+
+/* bảng tiêu chuẩn & avail vẫn dùng css riêng của component */
+
+.review { display:flex; gap:12px; padding:14px 0; border-bottom:1px solid #f1f5f9; }
+.review .avatar { width:40px; height:40px; border-radius:50%; }
+.review .content .row1 { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.review .name { font-weight:700; }
+.review .course { color:var(--green); font-weight:600; }
+.review .num { color:#0a0; font-weight:600; }
+.when { color:var(--muted); font-size:12px; margin:2px 0 6px; }
+
+.section-block{
+  scroll-margin-top: calc(var(--header-h) + var(--nav-h));
+  padding-top: 16px;
+}
+
+/* Buttons */
+.btn{ height:42px; border-radius:8px; border:2px solid transparent; font-weight:600; cursor:pointer; }
+.btn-green{ background:var(--green); color:#fff; width:100%; margin-top:10px; }
+.btn-green:hover{
+  background:#fff;
+  color: var(--green);
+  border-color: var(--green);
+  outline: none; 
+}
+.btn-green:focus,
+.btn-green:active{
+  background:var(--green);
+  filter:brightness(0.9);
+  color:#fff;
+}

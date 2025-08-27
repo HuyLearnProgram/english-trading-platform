@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '@styles/Breadcrumb.css'; // Ensure you have the appropriate styles
+import '@styles/common/Breadcrumb.css'; // Ensure you have the appropriate styles
 
 const Breadcrumb = ({ items = [] }) => {
   if (!items.length) return null;

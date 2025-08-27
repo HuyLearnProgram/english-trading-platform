@@ -1,0 +1,3 @@
+.stars { display:flex; gap:2px; }
+.star { width:18px; height:18px; fill:#e5e7eb; }
+.star.on { fill:#f5c518; }

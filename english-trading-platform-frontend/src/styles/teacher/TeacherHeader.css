@@ -1,0 +1,13 @@
+.tp-header { display:flex; gap:20px; align-items:center; margin-bottom: 10px; }
+.tp-header .avatar { position:relative; width:110px; height:110px; border-radius:8px; overflow:hidden; }
+.tp-header .avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.voice-btn { position:absolute; bottom:8px; left:8px; width:32px; height:32px; border-radius:6px; background:#14b24c; border:none; display:grid; place-items:center; }
+.voice-btn svg { fill:#fff; width:18px; height:18px; }
+.tp-header .info { flex:1; }
+.name { font-size:22px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.country { color:#333; font-weight:500; display:inline-flex; align-items:center; gap:6px; }
+.flag { font-size:18px; }
+.status { background:#e8fff1; color:#14b24c; padding:2px 8px; border-radius:999px; font-weight:600; }
+.rating-line { display:flex; align-items:center; gap:8px; margin-top:8px; }
+.score { color:#111; font-weight:600; }
+.muted { color:#6b7280; }

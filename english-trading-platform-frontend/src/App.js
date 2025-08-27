@@ -14,6 +14,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminConsultations from './pages/admin/AdminConsultations';
 import BlogCategoryPage from './pages/guest/BlogCategoryPage';
+import TeacherProfile from './pages/guest/TeacherProfile';
 
 const App = () => {
   return (
@@ -29,8 +30,8 @@ const App = () => {
           <Route path="/home" element={<CustomerHome />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogDetailPage />} />
-          <Route path="blog/category/:id" element={<BlogCategoryPage />} />
-
+          <Route path="/blog/category/:id" element={<BlogCategoryPage />} />
+          <Route path="/teacher/:id" element={<TeacherProfile/>} />
         </Route>
 
         {/* ===== ADMIN (yêu cầu role admin) ===== */}

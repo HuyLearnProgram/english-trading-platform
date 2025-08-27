@@ -2,7 +2,7 @@ import React from 'react';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { getConsultation, updateConsultation } from '@apis/consultation';
-import '@styles/ConsultationModal.css';
+import '@styles/admin/ConsultationModal.css';
 
 export default function ConsultationModal({ id, open, onClose, onSaved }) {
   const [loading, setLoading] = React.useState(false);

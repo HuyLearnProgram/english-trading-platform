@@ -1,6 +1,6 @@
 import React from 'react';
 import { STATUS_OPTIONS } from '@utils/constants';
-import '@styles/StatusDropdown.css';
+import '@styles/admin/StatusDropdown.css';
 
 export default function StatusDropdown({ value, onChange }) {
   const [open, setOpen] = React.useState(false);

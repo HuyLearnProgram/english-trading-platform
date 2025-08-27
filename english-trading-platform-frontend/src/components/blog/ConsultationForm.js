@@ -2,7 +2,7 @@
 import React from "react";
 import { toast } from "react-toastify";
 import { createConsultation } from "@apis/consultation";
-import "@styles/ConsultationForm.css";
+import "@styles/blog/ConsultationForm.css";
 
 export default function ConsultationForm({
   teacherName = "",
