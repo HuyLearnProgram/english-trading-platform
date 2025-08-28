@@ -3,6 +3,9 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, Up
 import { Review } from '../review/review.entity';
 import { LessonPackage } from '../lesson-package/lesson-package.entity';
 import { Blog } from 'src/blog/blog.entity';
+import { Lesson } from '../lesson/lesson.entity';
+import { Enrollment } from '../enrollment/enrollment.entity';
+import { RefundRequest } from '../refund/refund-request.entity';
 
 @Entity()
 export class Teacher {
@@ -51,14 +54,12 @@ export class Teacher {
   weeklyAvailability: any;
 
 
-  @OneToMany(() => Review, review => review.teacher)
-  reviews: Review[];
-
-  @OneToMany(() => LessonPackage, p => p.teacher, { cascade: true })
-  lessonPackages: LessonPackage[];
-
-  @OneToMany(() => Blog, (b) => b.author)
-  blogs: Blog[];
+  @OneToMany(() => Review, review => review.teacher) reviews: Review[];
+  @OneToMany(() => LessonPackage, p => p.teacher, { cascade: true }) lessonPackages: LessonPackage[];
+  @OneToMany(() => Blog, (b) => b.author) blogs: Blog[];
+  @OneToMany(() => Lesson, l => l.teacher) lessons: Lesson[];
+  @OneToMany(() => Enrollment, e => e.teacher) enrollments: Enrollment[];
+  @OneToMany(() => RefundRequest, r => r.teacher) refunds: RefundRequest[];
 
   @Column('json', { nullable: true })
   certificates?: Array<{ name: string; fileUrl?: string; verified?: boolean }>;

@@ -1,11 +1,17 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Patch, Delete } from '@nestjs/common';
 import { TeachersService } from './teacher.service';
 import { CreateTeacherDto, UpdateTeacherDto, QueryTeachersDto } from './dto';
+import { TeacherMetricsService } from './teacher-metrics.service';
+import { MetricThresholdsService } from 'src/config/metric-thresholds.service';
 
 
 @Controller('teachers')
 export class TeachersController {
-  constructor(private readonly service: TeachersService) {}
+  constructor(
+    private readonly service: TeachersService,
+    private readonly metrics: TeacherMetricsService,
+    private readonly thresholds: MetricThresholdsService,
+  ) {}
 
   @Get()
   findAll(@Query() q: QueryTeachersDto) {
@@ -35,5 +41,14 @@ export class TeachersController {
   @Get(':id/public')
   publicProfile(@Param('id', ParseIntPipe) id: number) {
     return this.service.getPublicProfile(id);
+  }
+
+  @Get(':id/metrics')
+  async metricsForTeacher(@Param('id', ParseIntPipe) id: number) {
+    const [m, cfg] = await Promise.all([
+      this.metrics.getMetrics(id),
+      this.thresholds.getConfig(),
+    ]);
+    return { ...m, windows: cfg.windows, thresholds: cfg.thresholds };
   }
 }

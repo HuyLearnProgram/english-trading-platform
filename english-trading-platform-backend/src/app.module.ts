@@ -15,6 +15,10 @@ import { TeacherModule } from './teacher/teacher.module';
 import { BlogModule } from './blog/blog.module';
 import { BlogCategoryModule } from './blog-category/blog-category.module';
 import { ConsultationModule } from './consultation/consultation.module';
+import { LessonModule } from './lesson/lesson.module';
+import { EnrollmentModule } from './enrollment/enrollment.module';
+import { RefundRequestModule } from './refund/refund-request.module';
+import { MetricThresholdsModule } from './config/metric-thresholds.module';
 
 @Module({
   imports: [
@@ -60,6 +64,10 @@ import { ConsultationModule } from './consultation/consultation.module';
     BlogModule,
     BlogCategoryModule,
     ConsultationModule,
+    LessonModule,
+    EnrollmentModule,
+    RefundRequestModule,
+    MetricThresholdsModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],
