@@ -1,0 +1,40 @@
+.tp-kpis{
+  display:grid;
+  gap:16px;
+  grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+  margin-top:8px;
+}
+.kpi-card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:14px 16px;
+}
+.kpi-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.kpi-head h5{ margin:0; font-size:16px; font-weight:600; }
+.kpi-sub{ color:#6b7280; font-size:12px; }
+
+.kpi-rows{ margin-top:8px; display:grid; gap:8px; }
+.kpi-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; }
+.kpi-row span:first-child{ color:#374151; }
+
+.badge{
+  display:flex; align-items: center; justify-content: center; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600;
+  border:1px solid transparent;
+}
+.badge.good{ background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+.badge.warn{ background:#fffbeb; color:#92400e; border-color:#fde68a; }
+.badge.bad{  background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+.badge.na{   background:#f3f4f6; color:#4b5563; border-color:#e5e7eb; }
+
+.mini-reviews{ list-style:none; padding:0; margin:10px 0 4px; display:grid; gap:6px; }
+.mini-reviews li{ display:flex; gap:8px; align-items:center; color:#374151; }
+.stars{ font-weight:700; }
+.mr-name{ color:#111827; }
+.mr-time{ margin-left:auto; color:#6b7280; font-size:12px; }
+
+.link-btn{
+  margin-top:6px; background:none; border:0; color:var(--text-hover); cursor:pointer; padding:0;
+}
+.link-btn:hover{ opacity: .7; }
+.tip{ margin-top:8px; }

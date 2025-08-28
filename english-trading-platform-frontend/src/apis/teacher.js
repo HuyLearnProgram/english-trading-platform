@@ -6,3 +6,6 @@ export const apiGetTeachers = (params) =>
 
 export const apiGetTeacherPublic = (id) =>
     axiosInstance({ url: `/teachers/${id}/public`, method: 'get' });
+
+export const apiGetTeacherMetrics = (id) =>
+  axiosInstance({ url: `/teachers/${id}/metrics`, method: "get" });

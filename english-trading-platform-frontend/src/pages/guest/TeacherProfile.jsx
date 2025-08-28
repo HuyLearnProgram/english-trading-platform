@@ -8,7 +8,8 @@ import StickyTabs from '@components/teacher/StickyTabs';
 import AvailabilityTable from '@components/teacher/AvailabilityTable';
 import StarRow from '@components/common/StarRow';
 import VideoModal from '@components/common/VideoModal';
-import ConsultationForm from '@components/blog/ConsultationForm';   
+import ConsultationForm from '@components/blog/ConsultationForm';
+import TeacherMetrics from '@components/teacher/TeacherMetrics';   
 
 // page styles (chỉ còn layout/chung)
 import '@styles/teacher/TeacherProfile.css';
@@ -236,28 +237,10 @@ export default function TeacherProfile() {
           {/* ========== TIÊU CHUẨN ========== */}
           <section id="standard" ref={standardRef} className="section-block">
             <h4>Tiêu chuẩn giáo viên</h4>
-            <table className="standard">
-              <thead>
-                <tr><th></th><th>Tiêu chí</th><th></th><th>Điểm</th></tr>
-              </thead>
-              <tbody>
-                <tr><th rowSpan={13}><strong>Kỹ năng sư phạm</strong></th><th colSpan={2}><strong>Tương tác</strong></th><td className="tc">0 / 3</td></tr>
-                {['Khuyến khích học viên','Đặt câu hỏi','Sử dụng ngôn ngữ phù hợp'].map((x,i)=>(
-                  <tr key={i}><td>{x}</td><td className="tc"></td><td></td></tr>
-                ))}
-                <tr><th colSpan={2}><strong>Nội dung bài giảng</strong></th><td className="tc">0 / 7</td></tr>
-                {['Đa dạng hoạt động','Đa dạng hình ảnh','Sử dụng flash card','Sử dụng visual aids','Có hoạt động ôn tập','Tốc độ giảng phù hợp','Phân bổ thời gian hợp lý'].map((x,i)=>(
-                  <tr key={i}><td>{x}</td><td className="tc"></td><td></td></tr>
-                ))}
-                <tr><td colSpan={3} className="tc"><span>0 / 10</span></td></tr>
-                <tr><th rowSpan={5}><strong>Kỹ năng tiếng Anh</strong></th><th colSpan={2}><strong>Từ vựng và ngữ pháp (kiểm tra đầu vào)</strong></th><td className="tc"><span>0 / 10</span></td></tr>
-                <tr><th colSpan={2}><strong>Phát âm</strong></th><td className="tc"><span>0 / 10</span></td></tr>
-                {['Âm cuối','Ngữ điệu','Âm nhấn'].map((x,i)=>(
-                  <tr key={i}><td>{x}</td><td className="tc"></td><td></td></tr>
-                ))}
-                <tr><th><strong>Nhận xét</strong></th><td colSpan={3}></td></tr>
-              </tbody>
-            </table>
+            <TeacherMetrics
+              teacherId={id}
+              onViewReviews={() => scrollToSection('reviews', reviewsRef)}
+            />
           </section>
 
           {/* ========== THỜI GIAN NHẬN LỚP ========== */}
