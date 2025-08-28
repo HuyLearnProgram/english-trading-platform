@@ -28,6 +28,7 @@ export class BlogCategoryService {
     return this.catRepo.save(cur);
   }
   findAllCategories() { return this.catRepo.find({ order: { name: 'ASC' } }); }
+  
   async findCategoryBySlug(slug: string) {
     const c = await this.catRepo.findOne({ where: { slug } });
     if (!c) throw new NotFoundException('Category not found');
@@ -46,6 +47,7 @@ export class BlogCategoryService {
         .slice(0, 3);                           // lấy 3 bài đầu tiên
       return {
         id: category.id,
+        slug: category.slug,
         name: category.name,
         topBlogs: topBlogs,
       };

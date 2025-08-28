@@ -108,6 +108,7 @@ export class BlogService {
          .orWhere('LOWER(b.introText) LIKE :s', { s });
       }));
     }
+
     if (q.categoryId) qb.andWhere('b.categoryId = :cid', { cid: q.categoryId });
     if (q.categorySlug) qb.andWhere('c.slug = :cslug', { cslug: q.categorySlug });
 

@@ -20,4 +20,8 @@ export class BlogCategoryController {
     @Get('top-posts')
     getCategoriesWithTopPosts() { return this.service.findAllWithTopPosts(); }
     
+    @Get('slug/:slug')
+    getBySlug(@Param('slug') slug: string) {
+      return this.service.findCategoryBySlug(slug);
+    }
 }
