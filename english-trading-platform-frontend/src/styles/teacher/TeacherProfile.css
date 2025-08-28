@@ -60,3 +60,19 @@
   filter:brightness(0.9);
   color:#fff;
 }
+
+.tp-pager{
+  display:flex; gap:6px; align-items:center; justify-content:center;
+  margin-top:10px;
+}
+.tp-pager .page-btn, .tp-pager .page-nav{
+  min-width:36px; height:32px; padding:0 8px;
+  border:1px solid var(--border); background:#fff; border-radius:6px;
+  cursor:pointer;
+}
+.tp-pager .page-btn.active{
+  background:var(--text-hover); border-color:var(--text-hover); color: white; font-weight:700;
+}
+.tp-pager .page-nav:disabled, .tp-pager .page-btn:disabled{
+  opacity:.5; cursor:not-allowed;
+}

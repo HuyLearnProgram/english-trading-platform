@@ -11,3 +11,5 @@
 .rating-line { display:flex; align-items:center; gap:8px; margin-top:8px; }
 .score { color:#111; font-weight:600; }
 .muted { color:#6b7280; }
+.voice-btn.is-playing { background:#ef4444; } /* đổi màu khi đang phát (tùy chọn) */
+.voice-btn.is-playing:hover { filter:brightness(0.95); }

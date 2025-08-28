@@ -13,7 +13,7 @@ import TeacherMetrics from '@components/teacher/TeacherMetrics';
 
 // page styles (chỉ còn layout/chung)
 import '@styles/teacher/TeacherProfile.css';
-import { apiGetTeacherPublic } from '../../apis/teacher';
+import { apiGetTeacherPublic, apiGetTeacherReviews } from '../../apis/teacher';
 
 export default function TeacherProfile() {
   const { id } = useParams();
@@ -28,6 +28,15 @@ export default function TeacherProfile() {
   const [showSample, setShowSample] = useState(false);
   const [showConsult, setShowConsult] = useState(false);
 
+  // reviews (pagination)
+  const [rvItems, setRvItems] = useState([]);
+  const [rvPage, setRvPage] = useState(1);
+  const [rvLimit] = useState(5);
+  const [rvTotalPages, setRvTotalPages] = useState(1);
+  const [rvTotal, setRvTotal] = useState(0);
+  const [rvLoading, setRvLoading] = useState(false);
+
+
   // refs cho các section
   const aboutRef = useRef(null);
   const standardRef = useRef(null);
@@ -37,13 +46,33 @@ export default function TeacherProfile() {
   // ref của thanh tab (được forward từ StickyTabs)
   const navRef = useRef(null);
 
-  // fetch
+  // fetch teacher public
   useEffect(() => {
     (async () => {
       const { data } = await apiGetTeacherPublic(id);
       setData(data);
     })();
   }, [id]);
+  
+  // fetch reviews page
+  const fetchReviews = async (page = 1) => {
+    setRvLoading(true);
+    try {
+      const { data } = await apiGetTeacherReviews(id, { page, limit: rvLimit });
+      setRvItems(Array.isArray(data.items) ? data.items : []);
+      const meta = data.meta || {};
+      setRvTotal(meta.total || 0);
+      setRvTotalPages(meta.totalPages || 1);
+      setRvPage(meta.page || page);
+    } finally {
+      setRvLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews(rvPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, rvPage]);
 
   const t = data?.teacher;
   const rating = data?.rating;
@@ -239,7 +268,7 @@ export default function TeacherProfile() {
             <h4>Tiêu chuẩn giáo viên</h4>
             <TeacherMetrics
               teacherId={id}
-              onViewReviews={() => scrollToSection('reviews', reviewsRef)}
+              onViewReviews={() => { setRvPage(1); scrollToSection('reviews', reviewsRef); }}
             />
           </section>
 
@@ -259,7 +288,9 @@ export default function TeacherProfile() {
               <span className="muted"> · {rating?.total || 0} nhận xét</span>
             </div>
 
-            {(data?.reviews || []).map((rv) => (
+            {rvLoading && <div className="muted">Đang tải nhận xét…</div>}
+
+            {!rvLoading && rvItems.map((rv) => (
               <div key={rv.id} className="review">
                 <img className="avatar" src={rv.user?.avatarUrl || 'https://static.antoree.com/avatar.png'} alt={rv.user?.fullName || 'user'} />
                 <div className="content">
@@ -276,6 +307,39 @@ export default function TeacherProfile() {
                 </div>
               </div>
             ))}
+
+            {/* Pager */}
+            {rvTotalPages > 1 && (
+              <div className="tp-pager">
+                <button
+                  className="page-nav"
+                  disabled={rvPage <= 1}
+                  onClick={() => setRvPage((p) => Math.max(1, p - 1))}
+                  aria-label="Trang trước"
+                >
+                  ‹
+                </button>
+
+                {Array.from({ length: rvTotalPages }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    className={`page-btn ${n === rvPage ? 'active' : ''}`}
+                    onClick={() => setRvPage(n)}
+                  >
+                    {n}
+                  </button>
+                ))}
+
+                <button
+                  className="page-nav"
+                  disabled={rvPage >= rvTotalPages}
+                  onClick={() => setRvPage((p) => Math.min(rvTotalPages, p + 1))}
+                  aria-label="Trang sau"
+                >
+                  ›
+                </button>
+              </div>
+            )}
           </section>
         </div>
 

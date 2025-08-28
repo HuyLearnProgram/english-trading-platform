@@ -163,7 +163,7 @@ export default function BlogDetailPage() {
           {blog.author && (
             <AuthorCard
               author={blog.author}
-              getTeacherUrl={(t) => `/teachers/${t.id}`}
+              getTeacherUrl={(t) => `/teacher/${t.id}`}
             />
           )}
 
