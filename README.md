@@ -51,8 +51,8 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/chrispsang/Booking-System.git
-    cd Booking-System/booking-system-backend
+    git clone https://github.com/HuyLearnProgram/english-trading-platform.git
+    cd /english-trading-platform/english-trading-platform-backend
     ```
 
 2. Install dependencies:
@@ -95,7 +95,7 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
 
 1. Navigate to the frontend directory:
     ```sh
-    cd ../booking-system-frontend
+    cd ../english-trading-platform-frontend
     ```
 
 2. Install dependencies:
