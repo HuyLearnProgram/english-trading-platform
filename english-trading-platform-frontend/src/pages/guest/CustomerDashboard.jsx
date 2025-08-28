@@ -6,8 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import '@styles/CustomerDashboard.css';
 import '@styles/CustomerHome.css';
-import Footer from './Footer';
-import ConsultationForm from './blog/ConsultationForm';
+import Footer from '@components/Footer';
+import ConsultationForm from '@components/blog/ConsultationForm';
 
 const CustomerDashboard = () => {
   const { user, logout } = useContext(AuthContext);

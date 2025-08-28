@@ -1,4 +1,4 @@
-/* Header title của trang detail (giống tone BlogPage) */
+/* Header title của trang detail */
 .detail-header { border-bottom: 1px solid #e5e7eb; }
 .detail-title {
   margin: 6px 0 8px;
@@ -16,8 +16,8 @@
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 6px;
-  background: #ecfdf5;  /* blue-200 */
-  color: #10b981;       /* blue-600 */
+  background: var(--pill-background);
+  color: var(--text-hover);
   text-decoration: none;
 }
 
@@ -36,23 +36,20 @@
 
 /* Links trong nội dung */
 .article-links { list-style: disc inside; margin: 8px 0 0; padding: 0; }
-.article-links a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.article-links a { color: var(--text-hover); font-weight: 600; text-decoration: none; }
 .article-links a:hover { text-decoration: underline; }
-
 
 /* Related */
 .related-title {
   margin: 24px 0 10px; font-size: 18px; font-weight: 600; color: #111827;
   display: flex; align-items: center; gap: 10px;
 }
-.related-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
-}
+.related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .related-card { text-decoration: none; color: inherit; }
 .related-card .thumb { width: 100%; background: #f3f4f6; border-radius: 8px; overflow: hidden; }
 .related-card .thumb img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
 .related-item-title { margin: 10px 0 0; font-size: 16px; font-weight: 600; }
-.related-card:hover .related-item-title { color: #2563eb; }
+.related-card:hover .related-item-title { color: var(--text-hover); }
 
 @media (max-width: 768px) {
   .related-grid { grid-template-columns: 1fr; }

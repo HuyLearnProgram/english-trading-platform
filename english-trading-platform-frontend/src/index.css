@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+:root{
+  /* màu text khi hover và cho pill */
+  --text-hover: #10b981;
+
+  --box-shadow-input: rgba(16, 185, 129, .15);
+
+  /* pill background */
+  --pill-background: #ecfdf5;
+}

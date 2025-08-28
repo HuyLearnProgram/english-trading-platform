@@ -5,4 +5,4 @@
 .breadcrumb li.is-active { color:#111827; font-weight:600; }
 .breadcrumb li.is-active::after { content:""; }
 .breadcrumb a { color:#6b7280; text-decoration:none; }
-.breadcrumb a:hover { color:#2563eb; }
+.breadcrumb a:hover { color:var(--text-hover); }

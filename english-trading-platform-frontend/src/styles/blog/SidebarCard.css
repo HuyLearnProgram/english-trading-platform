@@ -1,0 +1,89 @@
+/* Bọc để tránh va chạm style toàn cục */
+/* Sidebar Card  Style*/
+.sidebar-card .card{
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:16px;
+  background:#fff;
+}
+.sidebar-card .card-title{
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:12px;
+  color:#111827;
+}
+
+/* Form */
+.sidebar-card .search-form{
+  display:flex;
+  align-items:center;
+}
+.sidebar-card .input-with-icon{
+  position:relative;
+  flex:1;
+}
+.sidebar-card .search-input{
+  width:100%;
+  height:44px;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:0 44px 0 14px; /* chừa chỗ icon bên phải */
+  font-size:14px;
+  outline:none;
+  box-sizing:border-box;
+  background:#fff;
+}
+.sidebar-card .search-input:focus{
+  border-color:var(--text-hover);
+  box-shadow:0 0 0 3px var(--box-shadow-input);
+}
+.sidebar-card .search-icon-btn{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  width:28px; height:28px;
+  display:inline-flex; align-items:center; justify-content:center;
+  color:#6b7280;
+  cursor:pointer;
+  z-index:1;
+
+  /* reset button */
+  background:transparent;
+  border:0;
+  padding:0;
+  border-radius:0;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.sidebar-card .search-icon-btn:hover{ color: var(--text-hover); }
+.sidebar-card .search-icon-btn:focus{ outline:none; }
+
+.sidebar-card .search-loading{
+  font-size:14px; color:#6b7280; margin-top:10px;
+}
+.sidebar-card .search-results{
+  list-style:none; padding:8px 0 0; margin:0; display:grid; gap:6px;
+}
+.sidebar-card .search-results a{
+  text-decoration:none; color:#374151;
+}
+.sidebar-card .search-results a:hover{
+  color:var(--text-hover);
+}
+
+/* Lộ trình */
+.sidebar-card .track-card{
+  margin-top:24px;
+  border:none !important;
+  box-shadow:none;
+  padding:0 !important;
+}
+.sidebar-card .tracks{ display:grid; gap:16px; }
+.sidebar-card .track-banner{ display:block; border-radius:10px; overflow:hidden; }
+.sidebar-card .track-banner img{ width:100%; height:auto; display:block; }
+
+/* Responsive */
+@media (max-width:768px){
+  .sidebar-card .tracks{ grid-template-columns:1fr; }
+}

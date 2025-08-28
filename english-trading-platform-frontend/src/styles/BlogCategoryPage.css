@@ -39,7 +39,7 @@
     padding: 0 12px 0 40px; /* chừa chỗ cho icon bên trái */
   }
   .catpage-search input:focus{
-    border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15);
+    border-color:var(--text-hover); box-shadow:0 0 0 3px var(--box-shadow-input);
   }
   .catpage-search .search-btn-left{
     position: absolute;
@@ -90,12 +90,12 @@
   .catcard-thumb{ width:100%; border-radius:14px; overflow:hidden; background:#f3f4f6; }
   .catcard-thumb img{ width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
   .catcard-title{ margin:10px 0 8px; font-size:16px; font-weight:700; color:#111827; }
-  .catcard:hover .catcard-title{ color:#2563eb; }
+  .catcard:hover .catcard-title{ color: var(--text-hover); }
   .catcard-pill{
     display:inline-block;
     font-size:10px; font-weight:800;
     padding:3px 8px; border-radius:6px;
-    background:#dbeafe; color:#2563eb;
+    background: var(--pill-background);  color: var(--text-hover);     
   }
   
   .loading, .empty { color:#6b7280; margin:20px 0; }

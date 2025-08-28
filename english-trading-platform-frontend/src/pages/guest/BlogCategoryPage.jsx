@@ -1,52 +1,74 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumb from '@components/common/Breadcrumb';
 import { fetchBlogsByCategory, fetchCategories } from '@apis/blog';
 import { placeholderImg, SORTS } from '@utils/constants';
 import '@styles/BlogCategoryPage.css';
 
-
-
 export default function BlogCategoryPage() {
-  const { id } = useParams();
-  const categoryId = Number(id);
+  const { slug } = useParams();                 // có thể undefined (khi /blog/search)
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [catName, setCatName] = useState('Danh mục');
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(9);
 
+  // query params
   const [sort, setSort] = useState('newest');
   const [q, setQ] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  // Lấy tên category
+  const lastReqId = useRef(0);
+
+  // đồng bộ từ URL -> state
+  useEffect(() => {
+    const urlQ = searchParams.get('search') ?? searchParams.get('q') ?? '';
+    setQ(urlQ);
+    setSort(searchParams.get('sort') || 'newest');
+    const p = parseInt(searchParams.get('page') || '1', 10);
+    setPage(Number.isNaN(p) ? 1 : p);
+  }, [searchParams]);
+
+  // Tiêu đề trang
   useEffect(() => {
     (async () => {
+      // Nếu không có slug => đang ở /blog/search
+      if (!slug) {
+        setCatName(q ? `Kết quả cho “${q}”` : 'Tất cả bài viết');
+        return;
+      }
+      // Có slug => tìm theo category
       try {
         const res = await fetchCategories();
-        const found = (res.data || []).find((c) => Number(c.id) === categoryId);
+        const found = (res.data || []).find((c) => c.slug === String(slug));
         setCatName(found?.name || 'Danh mục');
       } catch {
         setCatName('Danh mục');
       }
     })();
-  }, [categoryId]);
+  }, [slug, q]);
+
+  const [loading, setLoading] = useState(false);
 
   const fetchPage = useCallback(
     async (nextPage, append = false) => {
+      const reqId = ++lastReqId.current;
       setLoading(true);
       try {
         const res = await fetchBlogsByCategory({
-          categoryId,
+          // nếu có slug thì truyền; nếu không có (trang search) thì KHÔNG truyền
+          categorySlug: slug ? String(slug) : undefined,
           page: nextPage,
           limit,
           sort,
           search: q || undefined,
         });
+
+        // Nếu đã có request mới hơn, bỏ qua kết quả cũ
+        if (reqId !== lastReqId.current) return;
 
         const list = Array.isArray(res.data) ? res.data : res.data?.items || [];
         const meta = res.data?.meta;
@@ -58,7 +80,6 @@ export default function BlogCategoryPage() {
           setTotal(meta.total || list.length);
           setTotalPages(tp);
         } else {
-          // Fallback khi BE không trả meta
           const tp = Math.max(1, Math.ceil((append ? items.length + list.length : list.length) / limit));
           setTotal(append ? items.length + list.length : list.length);
           setTotalPages(tp);
@@ -66,23 +87,44 @@ export default function BlogCategoryPage() {
 
         setPage(nextPage);
       } finally {
-        setLoading(false);
+        if (reqId === lastReqId.current) setLoading(false);
       }
     },
-    [categoryId, limit, sort, q] // eslint-disable-line
+    [slug, limit, sort, q] // eslint-disable-line
   );
 
-  // Load khi đổi sort / search
   useEffect(() => {
-    fetchPage(1, false);
-  }, [fetchPage]);
+    fetchPage(page || 1, false);
+  }, [fetchPage, page]);
+
+  // helper build URL (tự động chọn path)
+  const buildPath = (nextPage) => {
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('search', q.trim());  // CHUẨN HOÁ: dùng 'search'
+    params.set('sort', sort);
+    params.set('page', String(nextPage));
+    return slug
+      ? `/blog/category/${encodeURIComponent(String(slug))}?${params.toString()}`
+      : `/blog/search?${params.toString()}`;
+  };
 
   const onSubmitSearch = (e) => {
     e.preventDefault();
-    fetchPage(1, false);
+    navigate(buildPath(1));
   };
 
-  // Danh sách trang (hiển thị tất cả hoặc có thể làm window 5 trang nếu muốn)
+  const onChangeSort = (nextSort) => {
+    setSort(nextSort);
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('search', q.trim());
+    params.set('sort', nextSort);
+    params.set('page', '1');
+    navigate(slug
+      ? `/blog/category/${encodeURIComponent(String(slug))}?${params.toString()}`
+      : `/blog/search?${params.toString()}`
+    );
+  };
+
   const pages = useMemo(
     () => Array.from({ length: totalPages }, (_, i) => i + 1),
     [totalPages]
@@ -98,20 +140,14 @@ export default function BlogCategoryPage() {
         ]}
       />
 
-      {/* Hàng 1: tiêu đề + search */}
       <div className="catpage-headline">
         <h1 className="catpage-title">{catName}</h1>
 
         <form className="catpage-search" onSubmit={onSubmitSearch}>
           <button className="search-btn-left" aria-label="Tìm">
             <svg viewBox="0 0 24 24" width="18" height="18">
-              <path
-                d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              <path d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z"
+                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
           <input
@@ -124,13 +160,12 @@ export default function BlogCategoryPage() {
 
       <div className="catpage-divider" />
 
-      {/* Hàng 2: tổng bài + sort */}
       <div className="catpage-meta">
         <div className="catpage-sub">Có {total} bài viết</div>
 
         <div className="catpage-sort">
           <span>Sắp xếp theo</span>
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <select value={sort} onChange={(e) => onChangeSort(e.target.value)}>
             {SORTS.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
@@ -140,12 +175,11 @@ export default function BlogCategoryPage() {
         </div>
       </div>
 
-      {/* Grid */}
       <section className="catpage-grid">
         {loading && page === 1 && <div className="loading">Đang tải dữ liệu…</div>}
 
         {!loading && !items.length && (
-          <div className="empty">Chưa có bài viết nào trong danh mục này.</div>
+          <div className="empty">Không tìm thấy bài viết phù hợp.</div>
         )}
 
         {items.map((b) => (
@@ -158,18 +192,19 @@ export default function BlogCategoryPage() {
               />
             </div>
             <h3 className="catcard-title">{b.title}</h3>
-            <span className="catcard-pill">{catName}</span>
+            <span className="catcard-pill">
+              {b?.category?.name || catName}
+            </span>
           </Link>
         ))}
       </section>
 
-      {/* Phân trang số */}
       {totalPages > 1 && (
         <div className="pager-num">
           <button
             className="page-nav"
             disabled={page <= 1}
-            onClick={() => fetchPage(page - 1, false)}
+            onClick={() => navigate(buildPath(page - 1))}
             aria-label="Trang trước"
           >
             ‹
@@ -179,7 +214,7 @@ export default function BlogCategoryPage() {
             <button
               key={n}
               className={`page-btn ${n === page ? 'active' : ''}`}
-              onClick={() => fetchPage(n, false)}
+              onClick={() => navigate(buildPath(n))}
             >
               {n}
             </button>
@@ -188,7 +223,7 @@ export default function BlogCategoryPage() {
           <button
             className="page-nav"
             disabled={page >= totalPages}
-            onClick={() => fetchPage(page + 1, false)}
+            onClick={() => navigate(buildPath(page + 1))}
             aria-label="Trang sau"
           >
             ›

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext();
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // ---- Interceptor: auto refresh 1 lần, KHÔNG cho chính /auth/refresh
-  let refreshPromise = null;
+  const refreshPromiseRef = useRef(null);
 
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
@@ -63,11 +63,12 @@ export const AuthProvider = ({ children }) => {
 
         original._retry = true;
         try {
-          if (!refreshPromise) {
-            refreshPromise = api.post('/auth/refresh');
+          if (!refreshPromiseRef.current) {
+            refreshPromiseRef.current = api.post('/auth/refresh');
           }
-          const { data } = await refreshPromise.finally(() => {
-            refreshPromise = null;
+
+          const { data } = await refreshPromiseRef.current.finally(() => {
+            refreshPromiseRef.current = null;
           });
 
           applyAccessToken(data.access_token);

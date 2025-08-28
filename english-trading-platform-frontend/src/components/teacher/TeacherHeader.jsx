@@ -25,7 +25,7 @@ export default function TeacherHeader({ teacher, ratingAverage = 0, ratingTotal 
 
         <div className="rating-line">
           <StarRow value={Number(ratingAverage || 0)} />
-          <a className="score">({Number(ratingAverage || 0).toFixed(2)})</a>
+          <span  className="score">({Number(ratingAverage || 0).toFixed(2)})</span>
           <span className="muted"> · {ratingTotal || 0} nhận xét</span>
         </div>
       </div>

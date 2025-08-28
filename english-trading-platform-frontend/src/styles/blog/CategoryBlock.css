@@ -1,0 +1,98 @@
+/* ======= Category block ======= */
+.cat-block{ margin-bottom:40px; }
+
+.cat-title-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:8px 0 16px;
+}
+.orange-dot{
+  width:6px; height:6px;
+  border-radius:2px;
+  background:#FF9E00;
+  margin-bottom:6px;
+}
+.cat-title{ font-size:22px; font-weight:600; color:#111827; }
+
+/* Hero row (big left image + headline right) */
+.hero-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  margin-bottom:20px;
+}
+.hero-media{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f3f4f6;
+  border-radius:8px;
+  overflow:hidden;
+  min-height:220px;
+}
+.hero-media img{
+  width:100%; height:100%;
+  object-fit:contain;
+  aspect-ratio:16/9;
+}
+.hero-info{ display:flex; }
+.hero-title{
+  margin:0;
+  font-size:22px;
+  line-height:30px;
+  font-weight:600;
+  color:#111827;
+}
+.link{ color:#111827; text-decoration:none; }
+.link:hover{ color:var(--text-hover); }
+
+/* 2 sub cards */
+.subgrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:24px;
+}
+.subcard{ display:block; text-decoration:none; color:inherit; }
+.subcard .thumb{
+  width:100%;
+  background:#f3f4f6;
+  border-radius:8px;
+  overflow:hidden;
+}
+.subcard .thumb img{
+  width:100%;
+  aspect-ratio:16/9;
+  object-fit:contain;
+}
+.subcard-title{
+  margin:12px 0 0;
+  font-size:20px;
+  font-weight:600;
+  color:#111827;
+}
+.subcard:hover .subcard-title{ color:var(--text-hover); }
+
+/* View all */
+.view-all-wrap{ display:flex; justify-content:flex-end; margin-top:8px; }
+.view-all{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:var(--text-hover);
+  font-weight:600;
+  text-decoration:none;
+  cursor: pointer;
+}
+.view-all:hover{ opacity: 0.7; }
+.view-all svg{ margin-top: 4px; }
+
+.cat-divider{ border:0; height:1px; background:#e5e7eb; margin:28px 0 0; }
+
+/* ======= Responsive ======= */
+@media (max-width:768px){
+  .hero-row{ grid-template-columns:1fr; }
+  .subgrid{ grid-template-columns:1fr; }
+  .hero-title{ font-size:18px; line-height:26px; }
+  .subcard-title{ font-size:16px; }
+}

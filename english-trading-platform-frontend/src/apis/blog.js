@@ -1,50 +1,29 @@
 import axiosInstance from "../utils/axios";
 
-// Lấy danh sách category cùng top 3 blog nổi bật
-export const fetchTopBlogsByCategory = () => {
-  return axiosInstance({
-    url: '/categories/top-posts',
-    method: 'get',
-  });
-};
+export const fetchTopBlogsByCategory = () =>
+  axiosInstance({ url: '/categories/top-posts', method: 'get' });
 
-// Tìm kiếm blog theo tiêu đề (BE đọc query param `search`)
-export const searchBlogsByTitle = (query) => {
-  return axiosInstance({
-    url: '/blogs',
-    method: 'get',
-    params: { search: query },
-  });
-};
-
-// chi tiết theo slug (đã eager category + author)
 export const fetchBlogBySlug = (slug) =>
   axiosInstance({ url: `/blogs/by-slug/${encodeURIComponent(slug)}`, method: 'get' });
 
-// bài viết liên quan (cùng category, sắp xếp theo popular)
 export const fetchRelatedBlogs = ({ categoryId, excludeId, limit = 6 }) =>
   axiosInstance({
     url: '/blogs',
     method: 'get',
-    params: { categoryId, limit, sort: 'popular' } // lọc ở FE để bỏ current
+    params: { categoryId, limit, sort: 'popular' } // FE tự lọc excludeId nếu cần
   });
 
-// (tùy dùng ở sidebar)
-// export const searchBlogsByTitle = (q) =>
-//   axiosInstance({ url: '/blogs', method: 'get', params: { search: q, limit: 8 } });
-
-export const fetchBlogsByCategory = ({ categoryId, page = 1, limit = 9, sort = 'newest', search }) =>
-  axiosInstance({
-    url: '/blogs',
-    method: 'get',
-    params: {
-      categoryId,
-      page,
-      limit,
-      sort,       // 'newest' | 'oldest' | 'popular' (BE của bạn đã dùng tham số sort)
-      search
-    }
-  });
+// DÙNG CHUNG CHO CẢ CATEGORY & SEARCH
+export const fetchBlogsByCategory = ({ categorySlug, page = 1, limit = 9, sort = 'newest', search }) => {
+  const params = { page, limit, sort };
+  if (categorySlug) params.categorySlug = categorySlug;
+  if (search) params.search = search;
+  return axiosInstance({ url: '/blogs', method: 'get', params });
+};
 
 export const fetchCategories = () =>
   axiosInstance({ url: '/categories', method: 'get' });
+
+// (nếu cần) lấy category theo slug
+export const fetchCategoryBySlug = (slug) =>
+  axiosInstance({ url: `/categories/slug/${encodeURIComponent(slug)}`, method: 'get' });

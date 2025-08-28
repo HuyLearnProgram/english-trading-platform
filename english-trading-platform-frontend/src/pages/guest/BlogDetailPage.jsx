@@ -5,18 +5,15 @@ import TOCBox from '@components/blog/TOCBox';
 import AuthorCard from '@components/blog/AuthorCard';
 import Figure from "@components/blog/Figure";
 import RelatedCarousel from "@components/blog/RelatedCarousel";
-import ConsultationForm from '@components/blog/ConsultationForm';
+import SidebarCard from '@components/blog/SidebarCard';
 import {
   fetchBlogBySlug,
   fetchRelatedBlogs,
-  searchBlogsByTitle,
 } from '@apis/blog';
 import { placeholderImg, trackBanners } from '@utils/constants';
 
-import '@styles/BlogPage.css';   // container + 2 cột (giữ nguyên)
-import '@styles/BlogDetail.css'; // style detail nhẹ
-
-
+import '@styles/BlogPage.css';        // layout container + 2 cột
+import '@styles/BlogDetailPage.css';  // style riêng cho detail
 
 export default function BlogDetailPage() {
   const { slug } = useParams();
@@ -25,8 +22,6 @@ export default function BlogDetailPage() {
   const [blog, setBlog] = useState(null);
   const [related, setRelated] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,7 +38,7 @@ export default function BlogDetailPage() {
           const items = (resRel.data?.items || resRel.data || []).filter(x => x.id !== data.id);
           setRelated(items);
         }
-      } catch (e) {
+      } catch {
         navigate('/blog', { replace: true });
       } finally {
         mounted && setLoading(false);
@@ -52,16 +47,9 @@ export default function BlogDetailPage() {
     return () => { mounted = false; };
   }, [slug, navigate]);
 
-  const onSubmitSearch = async (e) => {
-    e.preventDefault();
+  const onSubmitSearch = () => {
     if (!searchTerm.trim()) return;
-    setSearching(true);
-    try {
-      const res = await searchBlogsByTitle(searchTerm.trim());
-      setSearchResults(res.data?.items || res.data || []);
-    } finally {
-      setSearching(false);
-    }
+    navigate(`/blog/search?search=${encodeURIComponent(searchTerm.trim())}`);
   };
 
   // Breadcrumbs
@@ -79,14 +67,14 @@ export default function BlogDetailPage() {
     if (blog.category) {
       arr.push({
         label: blog.category.name,
-        to: `/blog/category/${blog.category.id}`,
+        to: `/blog/category/${blog.category.slug}`,
       });
     }
     arr.push({ label: blog.title });
     return arr;
   }, [blog]);
 
-  // TOC: dùng blog.toc nếu có, nếu không tạo từ sections
+  // TOC
   const tocData = useMemo(() => {
     if (Array.isArray(blog?.toc) && blog.toc.length) return blog.toc;
     if (Array.isArray(blog?.sections) && blog.sections.length) {
@@ -109,22 +97,19 @@ export default function BlogDetailPage() {
       {/* Breadcrumb */}
       <Breadcrumb items={crumbs} />
 
-      {/* Title giống BlogPage */}
+      {/* Title */}
       <header className="detail-header">
         <h1 className="detail-title">{blog.title}</h1>
       </header>
 
-      {/* 2 cột giống BlogPage */}
+      {/* 2 cột */}
       <div className="blog-content">
         {/* LEFT: nội dung */}
         <div className="blog-main">
           {/* Category pill */}
           {blog.category && (
             <div className="detail-cat-pill">
-              <Link
-                to={`/blog/category/${blog.category.slug ?? blog.category.id}`}
-                className="pill"
-              >
+              <Link to={`/blog/category/${blog.category.slug}`} className="pill">
                 {blog.category.name}
               </Link>
             </div>
@@ -151,21 +136,15 @@ export default function BlogDetailPage() {
             <div className="article-sections">
               {blog.sections.map((s) => (
                 <section key={s.id} className="section">
-                  {/* đặt id lên heading để anchor chuẩn xác */}
                   <h2 id={s.id} className="anchor-offset">{s.title}</h2>
-
-                  {/* body: backend trả 'body' */}
                   {s.body && <p className="mt-2 preline">{s.body}</p>}
 
-                  {/* images: backend trả 'images[]' (vẫn hỗ trợ 'image') */}
                   {Array.isArray(s.images) && s.images.map((img, i) => (
                     <Figure key={i} src={img.src} caption={img.caption} />
                   ))}
                   {s.image?.src && <Figure src={s.image.src} caption={s.image.caption} />}
 
-                  {/* links[] */}
-                  {s.links && s.links.length > 0 && (
-                    <h3>Tham khảo thêm:</h3>)}
+                  {s.links && s.links.length > 0 && <h3>Tham khảo thêm:</h3>}
                   {Array.isArray(s.links) && s.links.length > 0 && (
                     <ul className="article-links">
                       {s.links.map((l, i) => (
@@ -180,11 +159,10 @@ export default function BlogDetailPage() {
             </div>
           )}
 
-          {/* Author (Teacher) */}
+          {/* Author */}
           {blog.author && (
             <AuthorCard
               author={blog.author}
-              // có thể tuỳ biến URL nếu route của bạn khác:
               getTeacherUrl={(t) => `/teachers/${t.id}`}
             />
           )}
@@ -195,61 +173,24 @@ export default function BlogDetailPage() {
           )}
         </div>
 
-        {/* RIGHT: sidebar giống BlogPage */}
+        {/* RIGHT: SidebarCard */}
         <aside className="blog-sidebar">
-          <div className="card">
-            <h3 className="card-title">Tìm kiếm bài viết học tập</h3>
-            <form onSubmit={onSubmitSearch} className="search-form">
-              <div className="input-with-icon">
-                <input
-                  className="search-input"
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <button type="submit" className="search-icon-btn" aria-label="Tìm kiếm">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z"
-                      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              </div>
-            </form>
-
-            {searching && <div className="search-loading">Đang tìm…</div>}
-            {!searching && !!searchResults.length && (
-              <ul className="search-results">
-                {searchResults.slice(0, 6).map((b) => (
-                  <li key={b.id}>
-                    <Link to={`/blog/${b.slug || b.id}`}>{b.title}</Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {/* Lộ trình cá nhân hoá */}
-            <div className="card track-card">
-              <h3 className="card-title">Lộ Trình Cá Nhân Hoá</h3>
-              <div className="tracks">
-                {trackBanners.map((b) => (
-                  <a key={b.alt} href={b.href} target="_blank" rel="noreferrer" className="track-banner">
-                    <img src={b.src} alt={b.alt} loading="lazy" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <ConsultationForm
-              teacherName={blog?.author?.fullName}
-              teacherId={blog?.author?.id}   // optional
-              blogSlug={blog?.slug}          // optional, tiện truy vết
-              source="blog"                  // optional, default đã là 'blog'
-            />
-          </div>
+          <SidebarCard
+            title="Tìm kiếm bài viết học tập"
+            searchTerm={searchTerm}
+            onChangeSearchTerm={setSearchTerm}
+            onSubmitSearch={onSubmitSearch}
+            banners={trackBanners}
+            showConsultation
+            consultationProps={{
+              teacherName: blog?.author?.fullName,
+              teacherId: blog?.author?.id,
+              blogSlug: blog?.slug,
+              source: 'blog',
+            }}
+          />
         </aside>
       </div>
     </div>
   );
 }
-

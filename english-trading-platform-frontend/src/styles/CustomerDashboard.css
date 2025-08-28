@@ -11,7 +11,7 @@
     grid-template-rows: auto 1fr auto;   /* header | fill | footer */
   }
   .hero .brand{
-    height:56px;display:flex;align-items:center;font-size:24px;font-weight:900;color:#16b53b;padding:0 16px;
+    height:56px;display:flex;align-items:center;font-size:24px;font-weight:900;color:#16b53b;padding:0 16px; flex-direction: row; margin-bottom: 0;
   }
   .hero{
     position: sticky;
@@ -42,7 +42,7 @@
   }
   
   /* Menu */
-  .nav{ display:flex; gap:18px; align-items:center; font-size: 18px;}
+  .nav{ display:flex; gap:18px; align-items:center; font-size: 20px;}
   .nav a{ color:#0d1c31; text-decoration:none; font-weight:600; }
   .nav a.nav-active{ color:#16b53b; }
   

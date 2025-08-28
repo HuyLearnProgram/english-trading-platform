@@ -1,20 +1,20 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './contexts/AuthContext';
-import Register from './components/Register';
-import Login from './components/Login';
+import Register from '@components/Register';
+import Login from '@components/Login';
 
-import CustomerDashboard from './components/CustomerDashboard';
-import CustomerHome from './pages/guest/CustomerHome';
-import BlogDetailPage from './pages/guest/BlogDetailPage';
-import BlogPage from './pages/guest/BlogPage';
+import CustomerDashboard from '@pages/guest/CustomerDashboard';
+import CustomerHome from '@pages/guest/CustomerHome';
+import BlogDetailPage from '@pages/guest/BlogDetailPage';
+import BlogPage from '@pages/guest/BlogPage';
 
 // --- Admin pages ---
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminOverview from './pages/admin/AdminOverview';
-import AdminConsultations from './pages/admin/AdminConsultations';
-import BlogCategoryPage from './pages/guest/BlogCategoryPage';
-import TeacherProfile from './pages/guest/TeacherProfile';
+import AdminDashboard from '@pages/admin/AdminDashboard';
+import AdminOverview from '@pages/admin/AdminOverview';
+import AdminConsultations from '@pages/admin/AdminConsultations';
+import BlogCategoryPage from '@pages/guest/BlogCategoryPage';
+import TeacherProfile from '@pages/guest/TeacherProfile';
 
 const App = () => {
   return (
@@ -30,7 +30,8 @@ const App = () => {
           <Route path="/home" element={<CustomerHome />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogDetailPage />} />
-          <Route path="/blog/category/:id" element={<BlogCategoryPage />} />
+          <Route path="/blog/category/:slug" element={<BlogCategoryPage />} />
+          <Route path="/blog/search" element={<BlogCategoryPage />} />
           <Route path="/teacher/:id" element={<TeacherProfile/>} />
         </Route>
 

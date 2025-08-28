@@ -40,7 +40,7 @@
     border-radius: 4px;
     cursor: pointer;
   }
-  .tocb-actions button:hover { background: #eef2ff; color: #1d4ed8; }
+  .tocb-actions button:hover { background: var(--pill-background); color: var(--text-hover); }
   
   /* Body */
   .tocb-body {
@@ -66,7 +66,7 @@
     text-decoration: none;
     color: #111827;
   }
-  .tocb-item > a:hover { color: #2563eb; text-decoration: underline; }
+  .tocb-item > a:hover { color: var(--text-hover); text-decoration: underline; }
   
   .tocb-item > a::before {
     content: "";
