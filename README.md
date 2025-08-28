@@ -122,6 +122,12 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ## Background
 ### Lecturer Search 
 ![Lecturer Search](./background/lecturer.png)
+### Lecturer Profile
+![Teacher Profile 1](./background/teacherprofile1.png)
+![Teacher Profile 2](./background/teacherprofile2.png)
+![Teacher Profile 3](./background/teacherprofile3.png)
+![Teacher Profile 4](./background/teacherprofile4.png)
+
 ### Blog List
 ![Blog List](./background/bloglist.png)
 ![Blog List By Category](./background/blogcategory.png)
