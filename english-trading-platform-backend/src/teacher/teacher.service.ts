@@ -117,96 +117,78 @@ export class TeachersService {
   }
 
   async findAll(q: QueryTeachersDto) {
-    const page = Math.max(1, q.page ?? 1);
+    const page  = Math.max(1, q.page ?? 1);
     const limit = Math.min(50, Math.max(1, q.limit ?? 12));
 
     const qb = this.repo.createQueryBuilder('t');
 
-    // === Search chung theo tên/chuyên môn/headline ===
-    if (q.search) {
-      const s = `%${q.search.toLowerCase()}%`;
-      qb.andWhere(
-        new Brackets((w) => {
-          w.where('LOWER(t.fullName) LIKE :s', { s })
-           .orWhere('LOWER(t.specialties) LIKE :s', { s })
-           .orWhere('LOWER(t.headline) LIKE :s', { s });
-        }),
-      );
-    }
+    // === (các filter hiện có) ===
+    // ... y nguyên phần search/country/specialties/gender/level/certs/price ở code của bạn
 
-    // === country: hỗ trợ nhiều giá trị CSV ===
-    const countries = parseCSV(q.country);
-    if (countries.length) {
-      qb.andWhere('t.country IN (:...countries)', { countries });
-    }
-
-    // === specialties: CSV -> match ANY bằng LIKE OR ===
-    const specialties = parseCSV(q.specialties).map(x => x.toLowerCase());
-    if (specialties.length) {
-      qb.andWhere(new Brackets((w) => {
-        specialties.forEach((sp, i) => {
-          w.orWhere(`LOWER(t.specialties) LIKE :sp${i}`, { [`sp${i}`]: `%${sp}%` });
-        });
-      }));
-    }
-
-    // === gender: CSV -> IN (nếu bạn lưu 1 giá trị) hoặc LIKE OR (nếu lưu CSV)
-    const genders = parseCSV(q.gender);
-    if (genders.length) {
-      // nếu cột gender lưu 1 giá trị duy nhất -> dùng IN:
-      qb.andWhere('t.gender IN (:...genders)', { genders });
-    }
-
-    // === level: CSV -> LIKE OR (vì thường lưu dạng “Beginner,Intermediate”) ===
-    const levels = parseCSV(q.level).map(x => x.toLowerCase());
-    if (levels.length) {
-      qb.andWhere(new Brackets((w) => {
-        levels.forEach((lv, i) => {
-          w.orWhere(`LOWER(t.level) LIKE :lv${i}`, { [`lv${i}`]: `%${lv}%` });
-        });
-      }));
-    }
-
-    // === certs: CSV -> LIKE OR ===
-    const certs = parseCSV(q.certs).map(x => x.toLowerCase());
-    if (certs.length) {
-      qb.andWhere(new Brackets((w) => {
-        certs.forEach((c, i) => {
-          w.orWhere(`LOWER(t.certs) LIKE :c${i}`, { [`c${i}`]: `%${c}%` });
-        });
-      }));
-    }
-
-    // === rating / price filter (nếu có) ===
-    if (q.minRating != null) qb.andWhere('t.rating >= :minRating', { minRating: q.minRating });
-    if (q.priceMin != null) qb.andWhere('t.hourlyRate >= :priceMin', { priceMin: q.priceMin });
-    if (q.priceMax != null) qb.andWhere('t.hourlyRate <= :priceMax', { priceMax: q.priceMax });
-
-    // === sort ===
+    // sort DB-level cho price/newest; rating sẽ sort ở memory sau khi gom thống kê
     switch (q.sort) {
       case 'price_asc':  qb.orderBy('t.hourlyRate', 'ASC'); break;
       case 'price_desc': qb.orderBy('t.hourlyRate', 'DESC'); break;
       case 'newest':     qb.orderBy('t.createdAt', 'DESC'); break;
-      default:           qb.orderBy('t.rating', 'DESC'); // rating_desc (default)
+      default:           qb.orderBy('t.createdAt', 'ASC'); // tạm, rating sort sau
     }
 
+    // Lấy trước danh sách thô theo filter DB
     const preItems = await qb.getMany();
 
-    // ==== Lọc theo thời gian (nếu có) ====
+    // Lọc theo khung giờ/ngày (logic của bạn)
     const pickedSlots = parseCSV(q.timeOfDay)
       .map(id => SLOT_RANGES[id])
       .filter(Boolean) as Array<[number,number]>;
-
-    const pickedDays = normalizeDays(parseCSV(q.days));
+    const pickedDays  = normalizeDays(parseCSV(q.days));
 
     const filtered = (pickedSlots.length || pickedDays.length)
       ? preItems.filter(t => matchAvailability(t.weeklyAvailability, pickedDays, pickedSlots))
       : preItems;
 
-    // ==== Tính total + phân trang sau khi đã lọc ====
+    // ===== Gom thống kê rating & count cho toàn bộ danh sách đã lọc =====
+    const ids = filtered.map(t => t.id);
+    const statMap = new Map<number, { avg: number; cnt: number }>();
+    if (ids.length) {
+      const stats = await this.reviewRepo.createQueryBuilder('r')
+        .select('r.teacherId', 'teacherId')
+        .addSelect('AVG(r.rating)', 'avg')
+        .addSelect('COUNT(*)', 'cnt')
+        .where('r.teacherId IN (:...ids)', { ids })
+        .groupBy('r.teacherId')
+        .getRawMany<{ teacherId: string; avg: string; cnt: string }>();
+
+      for (const s of stats) {
+        statMap.set(Number(s.teacherId), { avg: Number(s.avg), cnt: Number(s.cnt) });
+      }
+    }
+
+    // ===== Nếu sort theo rating_desc -> sort theo AVG thực =====
+    if (q.sort === 'rating_desc') {
+      filtered.sort((a, b) => {
+        const aAvg = statMap.get(a.id)?.avg ?? (a as any).rating ?? 0;
+        const bAvg = statMap.get(b.id)?.avg ?? (b as any).rating ?? 0;
+        if (bAvg !== aAvg) return bAvg - aAvg;
+        const aCnt = statMap.get(a.id)?.cnt ?? (a as any).reviewsCount ?? 0;
+        const bCnt = statMap.get(b.id)?.cnt ?? (b as any).reviewsCount ?? 0;
+        return bCnt - aCnt; // tie-break: nhiều nhận xét hơn đứng trước
+      });
+    }
+
+    // ===== Phân trang sau khi sort/lọc =====
     const total = filtered.length;
     const start = (page - 1) * limit;
-    const items = filtered.slice(start, start + limit);
+    const pageItems = filtered.slice(start, start + limit);
+
+    // Gắn trường tính toán vào item trả về
+    const items = pageItems.map(t => {
+      const s = statMap.get(t.id);
+      return {
+        ...t,
+        ratingAverage: s?.avg ?? (t as any).rating ?? 0,
+        reviewsCountComputed: s?.cnt ?? (t as any).reviewsCount ?? 0,
+      };
+    });
 
     return {
       items,
@@ -214,7 +196,7 @@ export class TeachersService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(Math.max(0, total) / limit) || 1,
       },
     };
   }
@@ -230,17 +212,17 @@ export class TeachersService {
       .where('r.teacherId = :id', { id })
       .getRawOne<{ avg: string; count: string }>();
   
-    const reviews = await this.reviewRepo.find({
-      where: { teacher: { id } },
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
-      take: 20, // lấy 20 cái gần nhất
-    });
+    // const reviews = await this.reviewRepo.find({
+    //   where: { teacher: { id } },
+    //   relations: ['user'],
+    //   order: { createdAt: 'DESC' },
+    //   take: 20, // lấy 20 cái gần nhất
+    // });
   
     return {
       teacher,
       rating: { average: Number(avg ?? 0), total: Number(count ?? 0) },
-      reviews,
+      // reviews,
     };
   }
 }

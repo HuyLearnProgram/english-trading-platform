@@ -3,7 +3,7 @@ import { Injectable, NotFoundException,  ForbiddenException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Review } from './review.entity';
-import { CreateReviewDto, UpdateReviewDto } from './dto';
+import { CreateReviewDto, QueryReviewDto, UpdateReviewDto } from './dto';
 import { User } from '../users/user.entity';
 import { Teacher } from 'src/teacher/teacher.entity';
 
@@ -43,11 +43,24 @@ export class ReviewService {
     return this.reviewRepo.save(r);
   }
 
-  async findByTeacher(teacherId: number) {
-    return this.reviewRepo.find({
+  async findByTeacher(teacherId: number, q: QueryReviewDto) {
+    const page  = Math.max(1, q.page ?? 1);
+    const limit = Math.min(50, Math.max(1, q.limit ?? 10));
+    const [items, total] = await this.reviewRepo.findAndCount({
       where: { teacher: { id: teacherId } },
       relations: ['user'],
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    };
   }
 }

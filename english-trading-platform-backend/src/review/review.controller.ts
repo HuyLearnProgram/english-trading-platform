@@ -1,7 +1,7 @@
 // src/review/review.controller.ts
-import { Controller, Post, Body, Get, Param, Patch, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, ParseIntPipe, Query } from '@nestjs/common';
 import { ReviewService } from './review.service';
-import { CreateReviewDto, UpdateReviewDto } from './dto';
+import { CreateReviewDto, QueryReviewDto, UpdateReviewDto } from './dto';
 
 // src/review/review.controller.ts (đổi routes)
 @Controller('reviews')
@@ -22,8 +22,11 @@ export class ReviewController {
   }
 
   @Get('teacher/:teacherId')
-  findByTeacher(@Param('teacherId', ParseIntPipe) teacherId: number) {
-    return this.srv.findByTeacher(teacherId);
+  findByTeacher(
+    @Param('teacherId', ParseIntPipe) teacherId: number,
+    @Query() q: QueryReviewDto
+  ) {
+    return this.srv.findByTeacher(teacherId, q);
   }
 }
 
