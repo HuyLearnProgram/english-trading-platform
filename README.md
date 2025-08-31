@@ -135,6 +135,8 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ### Login
 ![Login](./background/login.png)
 ![Sign in with Google](./background/signingg.png)
+### Notification
+![Notification](./background/notification.png)
 ### Lecturer Search 
 ![Lecturer Search](./background/lecturer.png)
 ### Lecturer Profile
