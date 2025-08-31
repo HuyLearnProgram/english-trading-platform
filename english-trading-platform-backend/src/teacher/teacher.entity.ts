@@ -50,6 +50,10 @@ export class Teacher {
   @Column({ nullable: true })
   certs: string;   // vd: “IELTS,TOEFL” (CSV)
 
+  /** Độ dài 1 lesson (phút). 45 | 60 | 90 (mặc định 45) */
+  @Column({ type: 'int', default: 45 })
+  lessonLengthMinutes: number;
+  
   @Column('json', { nullable: true })
   weeklyAvailability: any;
 

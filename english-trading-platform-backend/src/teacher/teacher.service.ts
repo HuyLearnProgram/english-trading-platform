@@ -1,5 +1,5 @@
 // src/teacher/teacher.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { Teacher } from './teacher.entity';
@@ -8,6 +8,27 @@ import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { Review } from 'src/review/review.entity';
 
+const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'] as const;
+type DayKey = typeof DAY_KEYS[number];
+
+const toMin = (hhmm: string) => {
+  const [h, m] = (hhmm || '').split(':').map(n => parseInt(n, 10));
+  if (Number.isNaN(h) || Number.isNaN(m)) return -1;
+  return h * 60 + m;
+};
+const toHHMM = (min: number) =>
+  `${String(Math.floor(min/60)).padStart(2,'0')}:${String(min%60).padStart(2,'0')}`;
+
+/** Chính sách có thể mở rộng trong tương lai */
+const SLOT_POLICIES: Array<{ lesson: number; slot: number; gridStep: number }> = [
+  { lesson: 45, slot: 60,  gridStep: 60 }, // 1h block, rơi đúng :00
+  { lesson: 60, slot: 90,  gridStep: 30 }, // 1h30 block, rơi đúng :00/:30
+  { lesson: 90, slot: 120, gridStep: 60 }, // 2h block, rơi đúng :00
+];
+const policyFor = (lessonLen: number) =>
+  SLOT_POLICIES.find(p => p.lesson === lessonLen) || { lesson: lessonLen, slot: 60, gridStep: 30 };
+
+// Chia chuỗi CSV -> mảng string
 const parseCSV = (v?: string) =>
   (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []) as string[];
 
@@ -88,6 +109,87 @@ export class TeachersService {
   constructor(@InjectRepository(Teacher) private readonly repo: Repository<Teacher>,
   @InjectRepository(Review) private readonly reviewRepo: Repository<Review>,
 ) {}
+
+  /** Chuẩn hóa + validate weeklyAvailability theo policy */
+  private sanitizeWeeklyAvailability(
+    raw: any,
+    lessonLengthMinutes = 45,
+  ): Record<DayKey, Array<{ start: string; end: string }>> | null {
+    if (!raw || typeof raw !== 'object') return null;
+
+    const { slot, gridStep } = policyFor(lessonLengthMinutes);
+    const out: Record<DayKey, Array<{start: string; end: string}>> = {
+      mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [],
+    };
+
+    for (const day of DAY_KEYS) {
+      const arr = Array.isArray(raw[day]) ? raw[day] : [];
+      const norm: Array<[number, number]> = [];
+
+      for (const it of arr) {
+        let s = toMin(it?.start), e = toMin(it?.end);
+        if (s < 0 || e < 0 || s >= e) continue;
+
+        // biên phải nằm trên lưới step
+        if (s % gridStep !== 0 || e % gridStep !== 0) {
+          throw new BadRequestException(
+            `Start/End must align to ${gridStep} minutes grid (day ${day})`,
+          );
+        }
+        // độ dài phải chia hết cho slot
+        const dur = e - s;
+        if (dur % slot !== 0) {
+          throw new BadRequestException(
+            `Interval ${it.start}-${it.end} on ${day} must be a multiple of ${slot} minutes for lesson length ${lessonLengthMinutes}`,
+          );
+        }
+        s = Math.max(0, s);
+        e = Math.min(24 * 60, e);
+        if (s < e) norm.push([s, e]);
+      }
+
+      // sort + merge, không cho overlap
+      norm.sort((a, b) => a[0] - b[0]);
+      const merged: Array<[number, number]> = [];
+      for (const cur of norm) {
+        const last = merged[merged.length - 1];
+        if (!last) { merged.push(cur); continue; }
+        if (cur[0] < last[1]) {
+          throw new BadRequestException(`Intervals overlap on ${day}`);
+        }
+        // nếu sát nhau thì merge
+        if (cur[0] === last[1]) last[1] = cur[1];
+        else merged.push(cur);
+      }
+
+      out[day] = merged.map(([s, e]) => ({ start: toHHMM(s), end: toHHMM(e) }));
+    }
+    return out;
+  }
+
+  /** Tách thành block = slot phút */
+  private expandToSlots(
+    weekly: any,
+    lessonLengthMinutes = 45,
+  ): Record<DayKey, Array<{ start: string; end: string }>> {
+    const { slot } = policyFor(lessonLengthMinutes);
+    const result: Record<DayKey, Array<{start: string; end: string}>> = {
+      mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [],
+    };
+    if (!weekly) return result;
+
+    for (const day of DAY_KEYS) {
+      const arr = weekly[day] || [];
+      for (const it of arr) {
+        let s = toMin(it.start), e = toMin(it.end);
+        if (s < 0 || e < 0 || s >= e) continue;
+        for (let m = s; m + slot <= e; m += slot) {
+          result[day].push({ start: toHHMM(m), end: toHHMM(m + slot) });
+        }
+      }
+    }
+    return result;
+  }
 
   async create(dto: CreateTeacherDto) {
     const t = this.repo.create({
@@ -201,28 +303,32 @@ export class TeachersService {
     };
   }
 
+  // getPublicProfile: trả thêm slots + policy
   async getPublicProfile(id: number) {
     const teacher = await this.repo.findOne({ where: { id } });
     if (!teacher) throw new NotFoundException('Teacher not found');
-  
+
     const { avg, count } = await this.reviewRepo
       .createQueryBuilder('r')
       .select('AVG(r.rating)', 'avg')
       .addSelect('COUNT(*)', 'count')
       .where('r.teacherId = :id', { id })
       .getRawOne<{ avg: string; count: string }>();
-  
-    // const reviews = await this.reviewRepo.find({
-    //   where: { teacher: { id } },
-    //   relations: ['user'],
-    //   order: { createdAt: 'DESC' },
-    //   take: 20, // lấy 20 cái gần nhất
-    // });
-  
+
+    const { slot, gridStep } = policyFor(teacher.lessonLengthMinutes);
+    const weeklyAvailabilitySlots = this.expandToSlots(
+      teacher.weeklyAvailability,
+      teacher.lessonLengthMinutes,
+    );
+
     return {
-      teacher,
+      teacher: {
+        ...teacher,
+        weeklyAvailabilitySlots,    // <- các block đã tách
+        slotMinutes: slot,          // 60 | 90 | 120
+        gridStepMinutes: gridStep,  // 60 | 30 | 60
+      },
       rating: { average: Number(avg ?? 0), total: Number(count ?? 0) },
-      // reviews,
     };
   }
 }

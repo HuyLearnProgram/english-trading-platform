@@ -18,9 +18,11 @@ export class QueryTeachersDto {
   @Type(() => Number) @IsNumber() @IsOptional() minRating?: number;
   @Type(() => Number) @IsNumber() @IsOptional() priceMin?: number;
   @Type(() => Number) @IsNumber() @IsOptional() priceMax?: number;
+  
 
   @IsString() @IsOptional() sort?: 'rating_desc' | 'price_asc' | 'price_desc' | 'newest';
 
+  @Type(() => Number) @IsInt() @IsOptional() lessonLengthMinutes?: number;
   @Type(() => Number) @IsInt() @IsOptional() page?: number;   // mặc định 1
   @Type(() => Number) @IsInt() @IsOptional() limit?: number;  // mặc định 12
 }
