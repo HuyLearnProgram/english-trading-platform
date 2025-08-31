@@ -19,6 +19,8 @@ import { LessonModule } from './lesson/lesson.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { RefundRequestModule } from './refund/refund-request.module';
 import { MetricThresholdsModule } from './config/metric-thresholds.module';
+import { NotificationModule } from './notification/notification.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { MetricThresholdsModule } from './config/metric-thresholds.module';
     EnrollmentModule,
     RefundRequestModule,
     MetricThresholdsModule,
+    NotificationModule,
+    MailModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],

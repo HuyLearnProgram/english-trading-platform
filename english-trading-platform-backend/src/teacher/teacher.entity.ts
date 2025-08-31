@@ -1,11 +1,12 @@
 // src/teacher/teacher.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Review } from '../review/review.entity';
 import { LessonPackage } from '../lesson-package/lesson-package.entity';
 import { Blog } from 'src/blog/blog.entity';
 import { Lesson } from '../lesson/lesson.entity';
 import { Enrollment } from '../enrollment/enrollment.entity';
 import { RefundRequest } from '../refund/refund-request.entity';
+import { User } from 'src/users/user.entity';
 
 @Entity()
 export class Teacher {
@@ -48,10 +49,17 @@ export class Teacher {
 
   @Column({ nullable: true })
   certs: string;   // vd: “IELTS,TOEFL” (CSV)
-  // ============================================
 
   @Column('json', { nullable: true })
   weeklyAvailability: any;
+
+  // map sang user
+  @Column({ nullable: true })
+  userId?: number;
+
+  @OneToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'userId' })
+  user?: User;
 
 
   @OneToMany(() => Review, review => review.teacher) reviews: Review[];

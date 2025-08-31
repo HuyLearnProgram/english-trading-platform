@@ -6,12 +6,14 @@ import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { GoogleStrategy } from './google.strategy';
+import { GoogleAuthController } from './google.controller';
 
 @Module({
   imports: [
     ConfigModule,
     UsersModule,
-    PassportModule,
+     PassportModule.register({ session: false }),
     JwtModule.registerAsync({
       useFactory: (cs: ConfigService) => ({
         secret: cs.get('JWT_ACCESS_SECRET'),
@@ -20,7 +22,8 @@ import { JwtStrategy } from './jwt.strategy';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy],
-  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  controllers: [AuthController, GoogleAuthController],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

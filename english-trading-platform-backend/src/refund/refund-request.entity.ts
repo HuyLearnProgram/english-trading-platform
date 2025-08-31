@@ -19,5 +19,9 @@ export class RefundRequest {
   @Column({ type: 'boolean', default: false }) eligible: boolean;
 
   @Column({ type: 'varchar' }) status: RefundStatus; // tính rate trên eligible=true
+
+  // Lý do hoàn phí
+  @Column({ type: 'text', nullable: true })
+  reason: string | null;
   @CreateDateColumn() createdAt: Date;
 }

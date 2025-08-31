@@ -1,5 +1,5 @@
 // src/refund/dto/query-refund.dto.ts
-import { IsBooleanString, IsEnum, IsInt, IsOptional } from 'class-validator';
+import { IsBooleanString, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { RefundStatus } from '../refund-request.entity';
 
@@ -9,6 +9,7 @@ export class QueryRefundsDto {
 
   @IsOptional() @IsEnum(['approved','rejected','pending'] as const) status?: RefundStatus;
   @IsOptional() @IsBooleanString() eligible?: string;  // 'true' | 'false'
+  @IsOptional() @IsString() reason?: string;
 
   @Type(() => Number) @IsOptional() @IsInt() page?: number;
   @Type(() => Number) @IsOptional() @IsInt() limit?: number;

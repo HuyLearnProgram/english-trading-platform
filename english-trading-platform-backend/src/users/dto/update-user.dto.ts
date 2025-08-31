@@ -1,17 +1,16 @@
-// src/users/dto/create-user.dto.ts
-import { IsEmail, IsOptional, IsString, IsUrl, IsIn, IsArray, ArrayNotEmpty } from 'class-validator';
+// src/users/dto/update-user.dto.ts
+import { IsEmail, IsOptional, IsString, IsUrl, IsIn, IsArray } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { AccountStatus, UserRole } from '../user.entity';
 
-export class CreateUserDto {
-  @IsEmail()
+export class UpdateUserDto {
+  @IsOptional() @IsEmail()
   @Transform(({ value }) => String(value).toLowerCase().trim())
-  email: string;
+  email?: string;
 
-  @IsString()
-  password: string;
+  @IsOptional() @IsString()
+  password?: string;
 
-  // Giữ tương thích: cho phép truyền role 
   @IsOptional() @IsIn(['admin', 'teacher', 'student'])
   role?: UserRole;
 
