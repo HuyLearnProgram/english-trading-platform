@@ -3,6 +3,8 @@ import { AuthContext } from '@contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import '@styles/Auth.css'; // có thêm phần CSS mới ở dưới
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+
 const Login = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -144,10 +146,23 @@ const Login = () => {
             </label>
 
             <button type="submit" className="btn-login">Login</button>
+            <button
+              type="button"
+              className="btn-google"
+              onClick={() => { window.location.href = `${API_URL}/auth/google`; }}
+            >
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>Đăng nhập bằng Google</span>
+            </button>
             <button type="button" className="btn-link" onClick={() => alert('Forgot password flow here')}>
               Forgot password
             </button>
           </form>
+
 
           <div className="help-links">
             <Link to="/help" className="link">Help Center</Link>

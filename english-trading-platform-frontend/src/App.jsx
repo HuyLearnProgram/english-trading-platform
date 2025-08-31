@@ -15,6 +15,11 @@ import AdminOverview from '@pages/admin/AdminOverview';
 import AdminConsultations from '@pages/admin/AdminConsultations';
 import BlogCategoryPage from '@pages/guest/BlogCategoryPage';
 import TeacherProfile from '@pages/guest/TeacherProfile';
+import AdminRefundRequests from '@pages/admin/AdminRefundRequests';
+import AdminUsers from '@pages/admin/AdminUsers';
+
+// --- Auth pages ---
+import GoogleCallback from '@pages/auth/GoogleCallback';
 
 const App = () => {
   return (
@@ -23,6 +28,7 @@ const App = () => {
         {/* Auth pages */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/login/callback" element={<GoogleCallback />} />
 
         {/* ===== PUBLIC CUSTOMER PAGES (không yêu cầu đăng nhập) ===== */}
         {/* Dùng lại layout CustomerDashboard */}
@@ -42,6 +48,8 @@ const App = () => {
         >
           <Route index element={<AdminOverview />} />
           <Route path="consultations" element={<AdminConsultations />} />
+          <Route path="refunds" element={<AdminRefundRequests />} />
+          <Route path="account" element={<AdminUsers />} />
         </Route>
 
         {/* ===== ROOT REDIRECT =====

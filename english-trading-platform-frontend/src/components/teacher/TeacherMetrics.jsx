@@ -74,23 +74,23 @@ export default function TeacherMetrics({ teacherId, onViewReviews, className = '
     <>
       <div className={`tp-kpis ${className}`}>
         {/* A. Hoạt động */}
-        <div className="kpi-card">
-          <div className="kpi-head">
+        <div className="kpi-card-profile">
+          <div className="kpi-head-profile">
             <h5>Hoạt động {actDays} ngày</h5>
-            <span className="kpi-sub">
+            <span className="kpi-sub-profile">
               Cập nhật: {new Date(metrics.computedAt).toLocaleString()}
             </span>
           </div>
-          <div className="kpi-rows">
-            <div className="kpi-row">
+          <div className="kpi-rows-profile">
+            <div className="kpi-row-profile">
               <span>Buổi đã dạy</span>
               <strong>{metrics.activity.completed_lessons_90d}</strong>
             </div>
-            <div className="kpi-row">
+            <div className="kpi-row-profile">
               <span>Học viên đã dạy</span>
               <strong>{metrics.activity.unique_students_90d}</strong>
             </div>
-            <div className="kpi-row">
+            <div className="kpi-row-profile">
               <span>Tỉ lệ quay lại</span>
               <span className={`badge ${grade(metrics.activity.repeat_student_rate, 'up', thRepeat)}`}>
                 {fmtPct(metrics.activity.repeat_student_rate)}
@@ -100,19 +100,19 @@ export default function TeacherMetrics({ teacherId, onViewReviews, className = '
         </div>
 
         {/* B. Độ tin cậy */}
-        <div className="kpi-card">
-          <div className="kpi-head">
+        <div className="kpi-card-profile">
+          <div className="kpi-head-profile">
             <h5>Độ tin cậy</h5>
-            <span className="kpi-sub">Trong {actDays} ngày</span>
+            <span className="kpi-sub-profile">Trong {actDays} ngày</span>
           </div>
-          <div className="kpi-rows">
-            <div className="kpi-row">
+          <div className="kpi-rows-profile">
+            <div className="kpi-row-profile">
               <span>Hủy bởi GV</span>
               <span className={`badge ${grade(metrics.reliability.cancel_rate_teacher, 'down', thCancel)}`}>
                 {fmtPct(metrics.reliability.cancel_rate_teacher)}
               </span>
             </div>
-            <div className="kpi-row">
+            <div className="kpi-row-profile">
               <span>Đúng giờ (≤ 5’)</span>
               <span className={`badge ${grade(metrics.reliability.on_time_rate, 'up', thOnTime)}`}>
                 {fmtPct(metrics.reliability.on_time_rate)}
@@ -122,19 +122,19 @@ export default function TeacherMetrics({ teacherId, onViewReviews, className = '
         </div>
 
         {/* D. Kết quả */}
-        <div className="kpi-card">
-          <div className="kpi-head">
+        <div className="kpi-card-profile">
+          <div className="kpi-head-profile">
             <h5>Kết quả</h5>
-            <span className="kpi-sub">Cửa sổ {outDays} ngày</span>
+            <span className="kpi-sub-profile">Cửa sổ {outDays} ngày</span>
           </div>
-          <div className="kpi-rows">
-            <div className="kpi-row">
+          <div className="kpi-rows-profile">
+            <div className="kpi-row-profile">
               <span>Gia hạn / đăng ký thêm</span>
               <span className={`badge ${grade(metrics.outcomes.renewal_rate, 'up', thRenew)}`}>
                 {fmtPct(metrics.outcomes.renewal_rate)}
               </span>
             </div>
-            <div className="kpi-row">
+            <div className="kpi-row-profile">
               <span>Hoàn phí (mẫu đủ ĐK)</span>
               <span className={`badge ${grade(metrics.outcomes.refund_rate_eligible, 'down', thRefund)}`}>
                 {fmtPct(metrics.outcomes.refund_rate_eligible)}
@@ -144,10 +144,10 @@ export default function TeacherMetrics({ teacherId, onViewReviews, className = '
         </div>
 
         {/* E. Cảm nhận học viên */}
-        <div className="kpi-card">
-          <div className="kpi-head">
+        <div className="kpi-card-profile">
+          <div className="kpi-head-profile">
             <h5>Cảm nhận học viên</h5>
-            <span className="kpi-sub">3 nhận xét gần nhất</span>
+            <span className="kpi-sub-profile">3 nhận xét gần nhất</span>
           </div>
           <ul className="mini-reviews">
             {(metrics.recentReviews || []).length === 0 && (

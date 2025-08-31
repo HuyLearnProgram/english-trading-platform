@@ -40,6 +40,10 @@ export const AuthProvider = ({ children }) => {
   // ---- Interceptor: auto refresh 1 lần, KHÔNG cho chính /auth/refresh
   const refreshPromiseRef = useRef(null);
 
+  const acceptExternalToken = useCallback((token) => {
+    applyAccessToken(token);
+  }, [applyAccessToken]);
+
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
       (res) => res,
@@ -121,8 +125,8 @@ export const AuthProvider = ({ children }) => {
   }, [applyAccessToken]);
 
   const value = useMemo(
-    () => ({ user, role, initializing, login, register, logout }),
-    [user, role, initializing, login, register, logout]
+    () => ({ user, role, initializing, login, register, logout, acceptExternalToken  }),
+    [user, role, initializing, login, register, logout, acceptExternalToken]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

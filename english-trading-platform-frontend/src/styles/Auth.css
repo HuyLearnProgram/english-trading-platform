@@ -203,3 +203,22 @@
   cursor: pointer;
 }
 .lang-btn svg { fill: currentColor; }
+
+
+/* --- Google button --- */
+.btn-google{
+  margin-top: 10px;
+  width: 100%;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-google:hover{ background:#f9fafb; }
+.btn-google img{ width:18px; height:18px; display:block; }

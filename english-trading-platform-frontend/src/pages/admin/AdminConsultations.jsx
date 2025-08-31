@@ -79,11 +79,11 @@ export default function AdminConsultations() {
           <table className="table">
             <thead>
               <tr>
-                <th>Họ tên</th>
-                <th>Điện thoại</th>
-                <th>Giảng viên</th>
-                <th>Người xử lý</th>
-                <th className="col-status">Trạng thái</th>
+                <th className="col-20">Họ tên</th>
+                <th className="col-10">Điện thoại</th>
+                <th className="col-10">Giảng viên</th>
+                <th className="col-10">Người xử lý</th>
+                <th className="col-status" style={{paddingLeft: 20}}>Trạng thái</th>
                 <th className="col-note">Lời nhắn</th>
                 <th style={{ width: 140 }}>Hành động</th>
               </tr>

@@ -1,0 +1,46 @@
+/* Backdrop + container */
+.al-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+
+.al-modal {
+  width: 520px; max-width: 92vw;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sections */
+.al-modal-head, .al-modal-foot {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.al-modal-foot {
+  border-top: 1px solid #e5e7eb; border-bottom: 0;
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+.al-modal-body { padding: 14px; display: grid; gap: 10px; }
+
+/* Controls */
+.al-modal-body textarea {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  min-height: 120px;
+  resize: vertical;
+}
+.al-form-error { color: #dc2626; margin-top: 6px; font-size: 13px; }
+.al-icon-btn {
+  border: 0; background: transparent; font-size: 14px; cursor: pointer;
+  line-height: 1; padding: 2px 6px; border-radius: 6px;
+}
+.al-icon-btn:hover { background: #f3f4f6; }
+.al-tip { color:#6b7280; font-size:12px; }
+
+/* Ghi chú: .btn và .btn.primary dùng chung style toàn cục của bạn */

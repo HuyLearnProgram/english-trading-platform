@@ -4,19 +4,19 @@
   grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
   margin-top:8px;
 }
-.kpi-card{
+.kpi-card-profile{
   background:#fff;
   border:1px solid #e5e7eb;
   border-radius:12px;
   padding:14px 16px;
 }
-.kpi-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
-.kpi-head h5{ margin:0; font-size:16px; font-weight:600; }
-.kpi-sub{ color:#6b7280; font-size:12px; }
+.kpi-head-profile{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.kpi-head-profile h5{ margin:0; font-size:16px; font-weight:600; }
+.kpi-sub-profile{ color:#6b7280; font-size:12px; }
 
-.kpi-rows{ margin-top:8px; display:grid; gap:8px; }
-.kpi-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; }
-.kpi-row span:first-child{ color:#374151; }
+.kpi-rows-profile{ margin-top:8px; display:grid; gap:8px; }
+.kpi-row-profile{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; }
+.kpi-row-profile span:first-child{ color:#374151; }
 
 .badge{
   display:flex; align-items: center; justify-content: center; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600;

@@ -12,11 +12,17 @@ code {
     monospace;
 }
 :root{
+  --red-bright: #EE4B2B;
   /* màu text khi hover và cho pill */
   --text-hover: #10b981;
+
+  --text-btn-green: #dcfce7;
 
   --box-shadow-input: rgba(16, 185, 129, .15);
 
   /* pill background */
   --pill-background: #ecfdf5;
+
+  --red-bright-text: #991b1b;
+  --pill-red-background: #fee2e2;
 }

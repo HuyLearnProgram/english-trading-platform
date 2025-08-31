@@ -13,7 +13,7 @@
 .admin-page .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; }
 
 /* KPIs */
-.kpi-row { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+.kpi-row { display:grid !important; grid-template-columns:repeat(6,minmax(0,1fr)) !important; gap:14px !important; margin-bottom:16px !important; }
 .kpi { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px; }
 .kpi-title { color:#6b7280; font-size:13px; }
 .kpi-value { font-size:22px; font-weight:800; margin-top:4px; }
@@ -38,7 +38,7 @@
 /* Table */
 .table { width:100%; border-collapse:collapse; }
 .table th, .table td { border-top:1px solid #f1f5f9; padding:10px 8px; text-align:left; vertical-align:top; }
-.table thead th { border-top:0; color:#6b7280; font-weight:600; font-size:13px; }
+.table thead th { border-top:0; color:#6b7280; font-weight:600; font-size:15px; }
 .cell-title { font-weight:600; color:#111827; }
 .cell-sub { color:#6b7280; font-size:12px; margin-top:2px; }
 

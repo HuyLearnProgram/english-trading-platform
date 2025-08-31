@@ -82,3 +82,62 @@ export const SORTS = [
   { value: 'oldest', label: 'Cũ nhất' },
   { value: 'popular', label: 'Phổ biến' },
 ];
+
+
+// Helper lấy thông điệp lỗi từ Axios/Nest
+export const getErrMsg = (e) => {
+  const d = e?.response?.data;
+  if (!d) return e?.message || 'Có lỗi xảy ra.';
+  if (typeof d.message === 'string') return d.message;
+  if (Array.isArray(d.message)) return d.message.join(', ');
+  return d.error || 'Có lỗi xảy ra.';
+};
+
+
+// User Account Manager
+export const Account_ROLES = [
+  { value: '',         label: 'Tất cả vai trò' },
+  { value: 'admin',    label: 'Admin' },
+  { value: 'teacher',  label: 'Teacher' },
+  { value: 'student',  label: 'Student' },
+];
+
+export const Account_STATUS = [
+  { value: '',         label: 'Tất cả trạng thái' },
+  { value: 'visible',  label: 'Hiện' },
+  { value: 'hidden',   label: 'Ẩn (bị khóa)' },
+];
+
+export const Account_badgeClass = (s) =>
+  s === 'visible' ? 'badge green' :
+  s === 'hidden'  ? 'badge red'   : 'badge gray';
+
+export const Account_SORTS = [
+  { value: 'email_asc',  label: 'Email A → Z' },
+  { value: 'email_desc', label: 'Email Z → A' },
+  { value: 'status',     label: 'Theo trạng thái' },
+  { value: 'role',       label: 'Theo vai trò' },
+];
+
+// Manage Refund Request
+
+export const Refund_STATUS = [
+  { value: '',         label: 'Tất cả'   },
+  { value: 'pending',  label: 'Pending'  },
+  { value: 'approved', label: 'Approved' },
+  { value: 'rejected', label: 'Rejected' },
+];
+
+export const Refund_badgeClass = (s) =>
+  s === 'approved' ? 'badge green' :
+  s === 'rejected' ? 'badge red' :
+  'badge amber';
+
+export const Refund_SORTS = [
+  { value: 'created_desc', label: 'Mới nhất' },
+  { value: 'created_asc',  label: 'Cũ nhất'  },
+  { value: 'status',       label: 'Theo trạng thái' },
+  { value: 'eligible',     label: 'Eligible trước'  },
+  { value: 'teacher',      label: 'Theo Teacher ID' },
+  { value: 'student',      label: 'Theo Student ID' },
+];

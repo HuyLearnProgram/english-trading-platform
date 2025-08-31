@@ -1,0 +1,109 @@
+/* ===== Refund Requests (bổ sung) ===== */
+
+/* Nút nhỏ dùng ở bảng (Toggle, v.v.) */
+.btn.btn-sm{
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.btn.btn-approve{
+  background-color: var(--green);
+  color: white;
+}
+.btn.btn-reject{
+  background-color: var(--red-bright);
+  color: white;
+}
+.btn.primary{
+  padding: 0px 30px !important;
+  font-size: 15px !important;
+  height: 38px;
+}
+
+.text-center{
+  text-align: center !important;
+}
+
+/* Cột Reason: rút gọn 3 dòng + dấu … (không ảnh hưởng cột khác) */
+.table td:nth-child(6) .cell-sub{
+  display: -webkit-box;         /* cần cho -webkit-line-clamp */
+  -webkit-box-orient: vertical; /* cần cho -webkit-line-clamp */
+  -webkit-line-clamp: 3;        /* Safari/Chrome hiện tại */
+  line-clamp: 3;                /* thuộc tính chuẩn (cho linter & tương lai) */
+  overflow: hidden;
+  white-space: normal;
+  line-height: 1.4;
+  word-break: break-word;       /* tránh tràn chữ dài */
+}
+
+/* Nhìn gọn hơn cho select trạng thái/eligible trong bảng */
+.status-inline select{
+  height: 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0 8px;
+  background: #fff;
+}
+
+/* Drawer: thoáng hơn khi nhập Reason */
+.drawer{
+  width: 520px;              /* nếu thích giữ 420px thì bỏ dòng này */
+  max-width: 90vw;
+}
+.drawer-body textarea{
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Hàng hành động trong bảng sát nhau hơn một chút */
+.row-actions .icon-btn{
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+/* Nhãn trạng thái (đã có trong file, thêm fallback để chắc chắn) */
+.badge.green { background:var(--pill-background); color:var(--text-hover); }
+.badge.amber { background:#fef3c7; color:#92400e; }
+.badge.red   { background:var(--pill-red-background); color:var(--red-bright-text); }
+.badge.gray  { background:#e5e7eb; color:#374151; }
+
+/* Nhóm nút duyệt / từ chối */
+.row-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+.row-actions .btn.btn-sm {
+  min-width: 84px;      /* dễ bấm */
+}
+.row-actions .btn.btn-sm:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+/* ==== Modal chung ==== */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+  width: 520px; max-width: 92vw; background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
+}
+.modal-head, .modal-foot { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; }
+.modal-foot { border-top: 1px solid #e5e7eb; border-bottom: 0; display:flex; gap:8px; justify-content:flex-end; }
+.modal-body { padding: 14px; display: grid; gap: 10px; }
+.modal-body textarea {
+  border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; font-size: 14px;
+  min-height: 120px; resize: vertical;
+}
+.form-error{
+  color:#dc2626;
+  margin-top:6px;
+  font-size:13px;
+}
+
+.search{
+  align-items: center;
+}
