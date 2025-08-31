@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Patch, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Patch, Param, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { NotificationsService } from './notification.service';
 
 @Controller('notifications')
@@ -19,5 +19,12 @@ export class NotificationsController {
   @Patch(':id/read')
   markRead(@Param('id', ParseIntPipe) id: number) {
     return this.svc.markRead(id);
+  }
+
+  @Get('unread-count')
+  async unreadCount(@Query('userId', ParseIntPipe) userId: number) {
+    if (!userId) throw new BadRequestException('userId is required');
+    const count = await this.svc.countUnread(userId);
+    return { count };
   }
 }

@@ -6,7 +6,7 @@ import { CreateUserDto, LoginUserDto } from '../users/dto';
 import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { Redis } from 'ioredis';
-import { randomUUID } from 'crypto';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +26,6 @@ export class AuthService {
     if (!this.validateEmail(email)) throw new UnauthorizedException('Invalid email format.');
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('User not found');
-
     if (await bcrypt.compare(pass, user.password)) {
       const { password, ...result } = user;
       return result;
@@ -34,7 +33,7 @@ export class AuthService {
     throw new UnauthorizedException('Invalid password');
   }
 
-  // ===== Refresh token helpers =====
+  // ===== Tokens =====
   private async signAccess(payload: any) {
     return this.jwtService.signAsync(payload, {
       secret: this.config.get('JWT_ACCESS_SECRET'),
@@ -47,70 +46,66 @@ export class AuthService {
       expiresIn: this.config.get('JWT_REFRESH_TTL') || '30d',
     });
   }
-  private rtKey(userId: number, jti: string) {
-    return `auth:rt:${userId}:${jti}`;
+
+  // ===== Redis key: 1 key / user =====
+  private rtKey(userId: number) {
+    return `auth:rt:${userId}`; // không dùng jti trong key nữa
   }
 
-  // Login: set HttpOnly cookie 'rt' + trả access token
-  async login(loginUserDto: LoginUserDto, res: import('express').Response) {
-    const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
-    const jti = randomUUID();
-    const payload = { sub: user.id, email: user.email, role: user.role, jti };
+  // Dọn các key kiểu cũ nếu còn (auth:rt:<id>:*)
+  private async cleanupLegacyKeys(userId: number) {
+    const pattern = `auth:rt:${userId}:*`;
+    let cursor = '0';
+    do {
+      const [next, keys] = await this.redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+      cursor = next;
+      if (keys.length) await this.redis.del(...keys);
+    } while (cursor !== '0');
+  }
 
+  // Cấp phiên + set cookie (dùng chung cho login thường, Google callback, refresh)
+  // mở rộng kiểu tham số để mang cả avatarUrl (nếu có)
+  public async startSessionForUser(
+    user: Pick<User,'id'|'email'|'role'|'avatarUrl'>,
+    res: import('express').Response
+  ) {
+    const payload = { sub: user.id, email: user.email, role: user.role };
     const [access, refresh] = await Promise.all([this.signAccess(payload), this.signRefresh(payload)]);
 
-    // Lưu HASH refresh token vào Redis
     const rtHash = await bcrypt.hash(refresh, 10);
     const ttlSec = this.parseTtlSeconds(this.config.get('JWT_REFRESH_TTL') || '30d');
-    await this.redis.set(this.rtKey(user.id, jti), rtHash, 'EX', ttlSec);
+    await this.cleanupLegacyKeys(user.id);
+    await this.redis.set(this.rtKey(user.id), rtHash, 'EX', ttlSec);
 
-    // Cookie HttpOnly
-    res.cookie('rt', refresh, {
-      httpOnly: true,
-      secure: this.config.get('NODE_ENV') === 'production',
-      sameSite: 'lax',
-      maxAge: ttlSec * 1000,
-      path: '/auth',
-    });
+    res.cookie('rt', refresh, { httpOnly:true, secure:this.config.get('NODE_ENV')==='production', sameSite:'lax', maxAge: ttlSec*1000, path:'/auth' });
 
-    return { access_token: access, id: user.id, role: user.role };
+    const profile = { id: user.id, email: user.email, role: user.role, avatarUrl: user.avatarUrl ?? null };
+    return { access, profile };
+  }
+
+  // ==== Public APIs ====
+  async login(dto: LoginUserDto, res: import('express').Response) {
+    const user = await this.validateUser(dto.email, dto.password); // user có avatarUrl
+    const { access, profile } = await this.startSessionForUser(user, res);
+    return { access_token: access, ...profile };
   }
 
   async refresh(req: import('express').Request, res: import('express').Response) {
     const token = req.cookies?.rt;
     if (!token) throw new UnauthorizedException('Missing refresh token');
 
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: this.config.get('JWT_REFRESH_SECRET'),
-    });
+    const payload = await this.jwtService.verifyAsync(token, { secret: this.config.get('JWT_REFRESH_SECRET') });
 
-    const key = this.rtKey(payload.sub, payload.jti);
+    const key = this.rtKey(payload.sub);
     const rtHash = await this.redis.get(key);
     if (!rtHash) throw new UnauthorizedException('Refresh token invalidated');
-
     const ok = await bcrypt.compare(token, rtHash);
     if (!ok) throw new UnauthorizedException('Refresh token mismatch');
 
-    // Rotate
-    await this.redis.del(key);
-    const newJti = randomUUID();
-    const newPayload = { sub: payload.sub, email: payload.email, role: payload.role, jti: newJti };
-
-    const [access, refresh] = await Promise.all([this.signAccess(newPayload), this.signRefresh(newPayload)]);
-
-    const newHash = await bcrypt.hash(refresh, 10);
-    const ttlSec = this.parseTtlSeconds(this.config.get('JWT_REFRESH_TTL') || '30d');
-    await this.redis.set(this.rtKey(payload.sub, newJti), newHash, 'EX', ttlSec);
-
-    res.cookie('rt', refresh, {
-      httpOnly: true,
-      secure: this.config.get('NODE_ENV') === 'production',
-      sameSite: 'lax',
-      maxAge: ttlSec * 1000,
-      path: '/auth',
-    });
-
-    return { access_token: access };
+    // lấy hồ sơ mới nhất (avatarUrl có thể đã đổi)
+    const u = await this.usersService.findById(payload.sub);
+    const { access, profile } = await this.startSessionForUser(u, res);
+    return { access_token: access, profile };
   }
 
   async logout(req: import('express').Request, res: import('express').Response) {
@@ -120,7 +115,7 @@ export class AuthService {
         const payload = await this.jwtService.verifyAsync(token, {
           secret: this.config.get('JWT_REFRESH_SECRET'),
         });
-        await this.redis.del(this.rtKey(payload.sub, payload.jti));
+        await this.redis.del(this.rtKey(payload.sub));
       } catch {}
     }
     res.clearCookie('rt', { path: '/auth' });
@@ -136,7 +131,6 @@ export class AuthService {
     return this.usersService.create(createUserDto);
   }
 
-  // parse "30d"/"15m"/"12h" -> seconds
   private parseTtlSeconds(s: string): number {
     const m = /^(\d+)([smhd])$/.exec(s.trim());
     if (!m) return 60 * 60 * 24 * 30;

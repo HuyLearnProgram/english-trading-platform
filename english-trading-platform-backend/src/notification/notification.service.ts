@@ -19,4 +19,7 @@ export class NotificationsService {
   markRead(id: number) {
     return this.repo.update({ id }, { read: true });
   }
+  async countUnread(userId: number) {
+    return this.repo.count({ where: { userId, read: false } });
+  }
 }
