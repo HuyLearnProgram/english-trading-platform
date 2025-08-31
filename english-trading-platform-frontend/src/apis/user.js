@@ -9,3 +9,11 @@ export const apiLockUser = (id, payload) =>
 
 export const apiUnlockUser = (id) =>
   axiosInstance({ url: `/users/${id}/unlock`, method: "patch" });
+
+// Lấy chi tiết user theo id (để có role, avatarUrl…)
+export const fetchUserById = (id) =>
+  axiosInstance({ url: `/users/id/${id}`, method: 'get' });
+
+// Đăng xuất (xoá cookie refresh phía BE)
+export const logoutUser = () =>
+  axiosInstance({ url: '/auth/logout', method: 'post' });

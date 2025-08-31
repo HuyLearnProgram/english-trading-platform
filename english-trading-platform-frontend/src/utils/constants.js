@@ -141,3 +141,17 @@ export const Refund_SORTS = [
   { value: 'teacher',      label: 'Theo Teacher ID' },
   { value: 'student',      label: 'Theo Student ID' },
 ];
+
+export function timeAgo(iso) {
+  const d = new Date(iso);
+  const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+  const as = (n, u) => `${n} ${u} trước`;
+  if (diff < 60) return as(diff, 'giây');
+  const m = Math.floor(diff / 60);
+  if (m < 60) return as(m, 'phút');
+  const h = Math.floor(diff / 3600);
+  if (h < 24) return as(h, 'giờ');
+  const day = Math.floor(diff / 86400);
+  if (day < 7) return as(day, 'ngày');
+  return d.toLocaleString('vi-VN');
+}

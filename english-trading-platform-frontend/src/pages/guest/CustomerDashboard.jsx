@@ -8,6 +8,9 @@ import '@styles/CustomerDashboard.css';
 import '@styles/CustomerHome.css';
 import Footer from '@components/Footer';
 import ConsultationForm from '@components/blog/ConsultationForm';
+import NotificationMenu from '@components/menu/NotificationMenu'; // hoặc '../components/NotificationMenu'
+import UserMenu from '@components/menu/UserMenu';
+
 
 const CustomerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -24,7 +27,6 @@ const CustomerDashboard = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Tự cuộn tới section khi URL có hash (#reviews/#about)
   useEffect(() => {
     if (location.hash) {
       const el = document.querySelector(location.hash);
@@ -33,53 +35,33 @@ const CustomerDashboard = () => {
   }, [location]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
-
-  // Tính trạng thái active cho items dùng anchor
   const isHome = location.pathname.startsWith('/customer/home');
   const isReviews = isHome && location.hash === '#reviews';
-  const isAbout   = isHome && location.hash === '#about';
-
-  const handleAdvise = () => {
-    setShowAdviseForm(true);
-  }
+  const isAbout = isHome && location.hash === '#about';
+  const handleAdvise = () => setShowAdviseForm(true);
 
   return (
     <div className="page">
       <header className={`hero ${stuck ? 'is-stuck' : ''}`}>
         <div className="hero-inner">
           <div className="nav-container">
-            <div className="brand" onClick={() => navigate('/home')} style={{cursor:'pointer'}}>antoree</div>
+            <div className="brand" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>antoree</div>
 
             <nav className="nav">
-              {/* Trang Giáo viên (home) */}
-              <NavLink to="/home" end
-                className={({ isActive }) =>
-                  isActive && !isReviews && !isAbout ? 'nav-active' : undefined
-                }
-              >
-                Giáo viên
-              </NavLink>
-
-              {/* Blog */}
-              <NavLink to="/blog" className={({ isActive }) => (isActive ? 'nav-active' : undefined)}>
-                Blog
-              </NavLink>
-
-              {/* Hai anchor trong trang home */}
-              <Link to="/home#reviews" className={isReviews ? 'nav-active' : undefined}>
-                Đánh giá của học viên
-              </Link>
-
-              <Link to="/home#about" className={isAbout ? 'nav-active' : undefined}>
-                Về chúng tôi
-              </Link>
+              <NavLink to="/home" end className={({ isActive }) => (isActive && !isReviews && !isAbout ? 'nav-active' : undefined)}>Giáo viên</NavLink>
+              <NavLink to="/blog" className={({ isActive }) => (isActive ? 'nav-active' : undefined)}>Blog</NavLink>
+              <Link to="/home#reviews" className={isReviews ? 'nav-active' : undefined}>Đánh giá của học viên</Link>
+              <Link to="/home#about" className={isAbout ? 'nav-active' : undefined}>Về chúng tôi</Link>
             </nav>
           </div>
 
           <div className="actions">
             <button className="cta-top" onClick={handleAdvise}>Học thử MIỄN PHÍ ngay</button>
+
+            {user && <NotificationMenu userId={user.id} />}
+
             {user ? (
-              <button onClick={handleLogout} className="logout-button">Đăng xuất</button>
+              <UserMenu user={user} onLogout={handleLogout} />
             ) : (
               <button onClick={() => navigate('/login')} className="logout-button">Đăng nhập</button>
             )}
@@ -93,12 +75,7 @@ const CustomerDashboard = () => {
 
       <Footer />
       {showAdviseForm && (
-        <ConsultationForm
-          variant="modal"
-          isOpen={showAdviseForm}
-          onClose={() => setShowAdviseForm(false)}
-          source="home"
-        />
+        <ConsultationForm variant="modal" isOpen={showAdviseForm} onClose={() => setShowAdviseForm(false)} source="home" />
       )}
       <ToastContainer position="bottom-right" theme="colored" />
     </div>
