@@ -84,6 +84,20 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
     
     REDIS_TLS=false
     NODE_ENV=development
+
+    # SMTP Config
+    SMTP_USER=
+    SMTP_PORT=587
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PASS=
+    MAIL_FROM=
+    
+    # Google OAuth Config
+    GOOGLE_CLIENT_ID=
+    GOOGLE_CLIENT_SECRET=
+    GOOGLE_CALLBACK_URL=
+    
+    FRONTEND_URL=http://localhost:3001
     ```
 
 4. Run the backend server (default port 3000):
@@ -120,6 +134,7 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ## Background
 ### Login
 ![Login](./background/login.png)
+![Sign in with Google](./background/signingg.png)
 ### Lecturer Search 
 ![Lecturer Search](./background/lecturer.png)
 ### Lecturer Profile
@@ -139,3 +154,6 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ![Register Consultation Form](./background/consultationform.png)
 ![Manage Consultation](./background/mconsultation.png)
 ![Edit Consultation Form](./background/editconsultation.png)
+## User manager
+![Manager User Account](./background/maccount.png)
+![Gmail Lock Notification](./background/gmaillockaccount.png)
