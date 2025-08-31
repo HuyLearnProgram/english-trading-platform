@@ -33,7 +33,6 @@ export default function TeacherProfile() {
   const [rvPage, setRvPage] = useState(1);
   const [rvLimit] = useState(5);
   const [rvTotalPages, setRvTotalPages] = useState(1);
-  const [rvTotal, setRvTotal] = useState(0);
   const [rvLoading, setRvLoading] = useState(false);
 
 
@@ -61,7 +60,6 @@ export default function TeacherProfile() {
       const { data } = await apiGetTeacherReviews(id, { page, limit: rvLimit });
       setRvItems(Array.isArray(data.items) ? data.items : []);
       const meta = data.meta || {};
-      setRvTotal(meta.total || 0);
       setRvTotalPages(meta.totalPages || 1);
       setRvPage(meta.page || page);
     } finally {
@@ -275,7 +273,12 @@ export default function TeacherProfile() {
           {/* ========== THỜI GIAN NHẬN LỚP ========== */}
           <section id="time" ref={timeRef} className="section-block">
             <h4>Thời gian nhận lớp</h4>
-            <AvailabilityTable weeklyAvailability={t.weeklyAvailability} />
+            <AvailabilityTable
+              // ưu tiên dữ liệu đã tách sẵn từ BE
+              weeklyAvailability={t.weeklyAvailabilitySlots || t.weeklyAvailability}
+              // để FE vẫn render đúng nếu BE chưa tách
+              slotMinutes={t.slotMinutes || (t.lessonLengthMinutes === 60 ? 90 : t.lessonLengthMinutes === 90 ? 120 : 60)}
+            />
             <p className="muted">Cập nhật gần nhất: {new Date(t.updatedAt).toLocaleDateString()}</p>
           </section>
 

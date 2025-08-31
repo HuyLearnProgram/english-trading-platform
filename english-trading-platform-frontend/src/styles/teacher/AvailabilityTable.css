@@ -1,4 +1,18 @@
 .avail { width:100%; border-collapse:collapse; }
 .avail th, .avail td { border:1px solid #edf2f7; padding:10px; vertical-align:top; }
-.slot { background:#f3f4f6; padding:4px 6px; border-radius:6px; margin-bottom:6px; display:inline-block; }
+.slot { border-radius:6px; margin-bottom:6px; display:inline-block; }
 .muted { color:#6b7280; }
+
+.avail-grid{ width:100%; border-collapse:collapse; table-layout:fixed; }
+.avail-grid th,.avail-grid td{ border:1px solid #edf2f7; padding:8px; }
+.avail-grid thead th{ background:#f8fafc; font-weight:700; }
+.avail-grid .time-col{ width:160px; background:#fbfdff; position:sticky; left:0; z-index:1; }
+.avail-grid tbody th.time-col{ font-weight:600; color:#334155; }
+
+.avail-grid td{ height:22px; vertical-align:middle; }
+.avail-grid td.on{ background:#f1f5f9;}
+.avail-grid .slot{
+  display:block;
+  text-align:center;
+  font-weight:600; font-size:14px;
+}
