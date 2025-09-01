@@ -1,6 +1,6 @@
 // src/pages/TeacherProfile.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // components
 import TeacherHeader from '@components/teacher/TeacherHeader';
@@ -18,6 +18,7 @@ import { apiGetTeacherPublic, apiGetTeacherReviews } from '../../apis/teacher';
 export default function TeacherProfile() {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  const navigate = useNavigate();
 
   // tabs
   const [active, setActive] = useState('about');
@@ -359,7 +360,7 @@ export default function TeacherProfile() {
               Xem lớp học mẫu
             </button>
           )}
-          <button className="btn btn-green" onClick={() => setShowConsult(true)}>
+          <button className="btn btn-green" onClick={() => navigate(`/order/${id}`)}>
             Học với giáo viên này
           </button>
         </div>

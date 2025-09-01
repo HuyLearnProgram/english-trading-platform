@@ -1,15 +1,8 @@
 // src/components/teacher/AvailabilityTable.jsx
 import React, { useMemo } from 'react';
+import { DAY_KEYS, LABELS, toMin, toHHMM } from '@utils/constants';
 import '@styles/teacher/AvailabilityTable.css';
 
-const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
-const LABELS  = ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ nhật'];
-
-const toMin = (hhmm) => {
-  const [h,m] = String(hhmm||'').split(':').map(n=>parseInt(n,10));
-  return h*60 + m;
-};
-const toHHMM = (m) => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
 
 /**
  * Props:

@@ -1,0 +1,94 @@
+.order-container { max-width:1080px; margin:0 auto; padding:16px; color:#0f172a; }
+.order-grid { display:grid; grid-template-columns: 1fr 360px; gap:20px; }
+@media (max-width: 1024px){ .order-grid{ grid-template-columns:1fr; } }
+
+.col-right h2 { margin:0 0 12px; }
+.plan-list { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:12px; }
+.plan-item { text-align: center; border:1px solid #e5e7eb; border-radius:10px; padding:12px 10px; cursor:pointer; background:#fff; text-align:left; }
+.plan-item.active { border-color:#14b24c; box-shadow:0 0 0 2px rgba(20,178,76,.1) inset; }
+.plan-item .p-title { font-weight:700; color:#6b7280; font-size:14px; }
+/* .plan-item .p-sub { } */
+
+.box { border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin:12px 0; background:#fff; }
+.box h4 { margin:0 0 10px; }
+.box .row { display:flex; justify-content:space-between; align-items: center; padding:6px 0; }
+.box .row.total { border-top:1px dashed #e5e7eb; margin-top:6px; padding-top:10px; }
+
+.btn-primary { background:#14b24c; color:#fff; border:0; border-radius:10px; height:44px; padding:0 16px; cursor:pointer; }
+.btn-primary.large{ width:100%; margin-top:6px; font-weight:700; }
+.btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+
+.muted { color:#6b7280; }
+.small { font-size:12px; }
+
+.col-left .teacher-card { display:flex; gap:12px; align-items:center; border:1px solid #e5e7eb; border-radius:10px; padding:10px; background:#fff; margin-bottom:12px; }
+.col-left .teacher-card img { width:60px; height:60px; border-radius:50%; object-fit:cover; }
+.t-info .t-name{ font-weight:800; }
+.t-info .t-meta{ color:#6b7280; font-size:12px; }
+.view-link{ font-size:12px; text-decoration:underline; margin-top:4px; display:inline-block; }
+
+.slot-picker .slot-list{ display:grid; grid-template-columns:1fr; gap:6px; max-height:360px; overflow:auto; }
+.slot-picker .slot{ display:flex; gap:8px; align-items:center; border:1px solid #e5e7eb; border-radius:8px; padding:6px 8px; background:#fff; }
+.slot-picker .slot.picked{ border-color:#14b24c; background:#f5fff8; }
+
+.alert { border-radius:10px; padding:10px 12px; margin:8px 0; }
+.alert.success { background:#f0fff4; border:1px solid #c6f6d5; }
+.alert.error   { background:#fff5f5; border:1px solid #fed7d7; }
+
+
+.order-grid.swapped { display:grid; grid-template-columns: 1.4fr 0.8fr; gap:20px; }
+@media (max-width: 1024px){ .order-grid.swapped{ grid-template-columns:1fr; } }
+
+.choice-5 { display:grid; grid-template-columns: repeat(5, 1fr); gap:10px; }
+.row.coupon { align-items:center; gap:10px; }
+.coupon-field { display:flex; gap:8px; }
+.coupon-field input { height:36px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; width:100%; }
+
+/* Badge OFF trên thẻ gói */
+.plan-item { position: relative; }
+.badge-off{
+  position:absolute; bottom:3px; left:8px;
+  background:#fde047; /* vàng */
+  color:#111827; font-weight:800; font-size:10px;
+  padding:1px 4px; border-radius:6px;
+  box-shadow:0 1px 0 rgba(0,0,0,.08);
+}
+.badge-off.best{ background:#facc15; } /* gói giảm mạnh nhất */
+
+.p-title-row{ display:flex; align-items:center; justify-content:space-between; }
+.best-tag{
+  font-size:10px; font-weight:800; padding:3px 6px; border-radius:999px; width: 24px;
+  background:#ecfeff; color:#155e75; border:1px solid #a5f3fc;position: absolute;top: -14px;right: -20px;
+}
+.p-savings{
+  margin-top:6px; font-size:12px; font-weight:700;
+  color:#065f46; background:#ecfdf5; border:1px solid #a7f3d0;
+  padding:4px 8px; border-radius:8px; display:inline-block;
+}
+
+/* Pill “Tiết kiệm …₫ -XX%” */
+.save-tag{
+  display:inline-flex; align-items:center; gap:8px;
+  margin:6px 0 10px;
+  border-radius:6px;
+  background:#fefce8; border:1px solid #fde68a; color:#92400e;
+  font-weight:700; font-size:12px;
+}
+.save-tag .save-pct{
+  background:#fde047; color:#111827; font-weight:800;
+  padding:2px 8px; border-radius:6px;
+}
+
+/* So sánh giá trong box */
+.row.compare .prices{ display:flex; align-items:center; gap:8px; }
+.row.compare .old{
+  text-decoration: line-through;
+  color:#9ca3af; font-weight:600;
+}
+.row.compare .new{
+  font-weight:800;
+}
+.total-strong{ font-size:18px; font-weight:900; }
+.pb-20{
+    padding-bottom: 20px !important;
+}

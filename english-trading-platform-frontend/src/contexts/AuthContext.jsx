@@ -13,6 +13,8 @@ function parseJwt(token) {
 }
 
 const HAS_SESSION = 'hasSession';
+const ACCESS_TOKEN = 'accessToken';     
+const USER_SNAPSHOT = 'userSnapshot';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // {id,email,role,avatarUrl}
@@ -23,11 +25,21 @@ export const AuthProvider = ({ children }) => {
     if (!accessToken) {
       delete api.defaults.headers.common.Authorization;
       setUser(null); setRole(null);
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(USER_SNAPSHOT);
       return;
     }
     api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
     const p = parseJwt(accessToken);
-    if (p) { setUser({ id: p.sub, email: p.email }); setRole(p.role); }
+    if (p) { 
+      setUser({ id: p.sub, email: p.email }); 
+      setRole(p.role); 
+      localStorage.setItem(ACCESS_TOKEN, accessToken);
+      localStorage.setItem(
+        USER_SNAPSHOT,
+        JSON.stringify({ id: p.sub, email: p.email, role: p.role })
+      );
+    }
   }, []);
 
   // Hàm lấy hồ sơ hiện tại
@@ -109,15 +121,29 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     (async () => {
       try {
+
+        // 1) Dựng lại tức thì từ localStorage (không chờ mạng)
+        const cached = localStorage.getItem(ACCESS_TOKEN);
+        if (cached) {
+          applyAccessToken(cached);
+          // Tùy chọn: dựng nhanh avatar/role từ snapshot
+          const snap = localStorage.getItem(USER_SNAPSHOT);
+          if (snap) {
+            try { const u = JSON.parse(snap); setUser(u); setRole(u.role); } catch {}
+          }
+        }
+
+        // 2) Sau đó thử refresh nếu có phiên RT cookie
         if (hasSession()) {
           const { data } = await api.post('/auth/refresh');
           applyAccessToken(data.access_token);
           if (data.profile) {
             setUser(data.profile);
             setRole(data.profile.role);
-          }else {
+            localStorage.setItem(USER_SNAPSHOT, JSON.stringify(data.profile));
+          } else {
             await fetchMe(); // fallback
-          }
+          } 
         }
       } finally {
         setInitializing(false);
@@ -131,6 +157,8 @@ export const AuthProvider = ({ children }) => {
     if (data.id) setUser({ id: data.id, email: data.email, role: data.role, avatarUrl: data.avatarUrl });
     setRole(data.role);
     markSession(true); // đã có cookie rt từ BE
+    // lưu snapshot rõ ràng hơn (nếu cần)
+    localStorage.setItem(USER_SNAPSHOT, JSON.stringify({ id: data.id, email: data.email, role: data.role, avatarUrl: data.avatarUrl }));
   }, [applyAccessToken]);
 
   const register = useCallback(
@@ -144,6 +172,26 @@ export const AuthProvider = ({ children }) => {
     try { await api.post('/auth/logout'); } catch {}
     markSession(false);
     applyAccessToken(null);
+  }, [applyAccessToken]);
+
+  // 3) Đồng bộ đa-tab qua storage event (đăng nhập/đăng xuất ở tab A → tab B cập nhật ngay)
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === ACCESS_TOKEN) {
+        // e.newValue null => logout, ngược lại => login
+        applyAccessToken(e.newValue);
+        if (!e.newValue) { setUser(null); setRole(null); }
+      }
+      if (e.key === USER_SNAPSHOT && e.newValue) {
+        try { const u = JSON.parse(e.newValue); setUser(u); setRole(u.role); } catch {}
+      }
+      if (e.key === HAS_SESSION && e.newValue !== '1') {
+        // phiên RT bị xoá ở tab khác
+        applyAccessToken(null);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, [applyAccessToken]);
 
   const value = useMemo(

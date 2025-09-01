@@ -20,6 +20,7 @@ import AdminUsers from '@pages/admin/AdminUsers';
 
 // --- Auth pages ---
 import GoogleCallback from '@pages/auth/GoogleCallback';
+import OrderPage from './pages/guest/OrderPage';
 
 const App = () => {
   return (
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="/blog/category/:slug" element={<BlogCategoryPage />} />
           <Route path="/blog/search" element={<BlogCategoryPage />} />
           <Route path="/teacher/:id" element={<TeacherProfile/>} />
+          <Route path="/order/:id" element={<OrderPage />} />
         </Route>
 
         {/* ===== ADMIN (yêu cầu role admin) ===== */}

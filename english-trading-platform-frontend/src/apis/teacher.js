@@ -1,4 +1,4 @@
-import axiosInstance from "../utils/axios";
+import axiosInstance from "@utils/axios";
 
 
 export const apiGetTeachers = (params) =>
@@ -12,3 +12,6 @@ export const apiGetTeacherMetrics = (id) =>
 
 export const apiGetTeacherReviews = (teacherId, params) =>
   axiosInstance({ url: `/reviews/teacher/${teacherId}`, method: 'get', params });
+
+export const apiGetTeacherOrderOptions = (id) =>
+  axiosInstance({ url: `/teachers/${id}/order-options`, method: 'get' });

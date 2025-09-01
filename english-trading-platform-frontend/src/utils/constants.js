@@ -155,3 +155,21 @@ export function timeAgo(iso) {
   if (day < 7) return as(day, 'ngày');
   return d.toLocaleString('vi-VN');
 }
+
+// Order
+export const formatWeeks = (weeks) => {
+  const m = Math.floor(weeks / 4);
+  const w = weeks % 4;
+  if (m > 0 && w > 0) return `${weeks} tuần (≈ ${m} tháng ${w} tuần)`;
+  if (m > 0) return `${weeks} tuần (≈ ${m} tháng)`;
+  return `${weeks} tuần`;
+};
+
+export const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+export const LABELS  = ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ nhật'];
+
+export const toMin = (hhmm) => {
+  const [h,m] = String(hhmm||'').split(':').map(n=>parseInt(n,10));
+  return h*60 + m;
+};
+export const toHHMM = (m) => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
