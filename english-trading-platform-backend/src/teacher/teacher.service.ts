@@ -1,114 +1,37 @@
 // src/teacher/teacher.service.ts
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Teacher } from './teacher.entity';
-import { QueryTeachersDto } from './dto/query-teacher.dto';
-import { CreateTeacherDto } from './dto/create-teacher.dto';
-import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { QueryTeachersDto, CreateTeacherDto, UpdateTeacherDto } from './dto';
 import { Review } from 'src/review/review.entity';
+import { DAY_KEYS, DayKey, SLOT_RANGES } from './utils/availability-consts';
+import { policyFor, toHHMM, toMin, parseCSV, normalizeDays } from './utils/availability-helpers';
+import { matchAvailability } from './utils/match-availability';
+import { PACKAGE_DISCOUNTS, PACKAGE_HOURS } from '../order/utils/order-consts';
+import { PricingService } from 'src/pricing/pricing.service';
+import { TeacherSlot } from './teacher-slot.entity';
+import { TeacherSlotReservation } from './teacher-slot-reservation.entity';
 
-const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'] as const;
-type DayKey = typeof DAY_KEYS[number];
-
-const toMin = (hhmm: string) => {
-  const [h, m] = (hhmm || '').split(':').map(n => parseInt(n, 10));
-  if (Number.isNaN(h) || Number.isNaN(m)) return -1;
-  return h * 60 + m;
-};
-const toHHMM = (min: number) =>
-  `${String(Math.floor(min/60)).padStart(2,'0')}:${String(min%60).padStart(2,'0')}`;
-
-/** Chính sách có thể mở rộng trong tương lai */
-const SLOT_POLICIES: Array<{ lesson: number; slot: number; gridStep: number }> = [
-  { lesson: 45, slot: 60,  gridStep: 60 }, // 1h block, rơi đúng :00
-  { lesson: 60, slot: 90,  gridStep: 30 }, // 1h30 block, rơi đúng :00/:30
-  { lesson: 90, slot: 120, gridStep: 60 }, // 2h block, rơi đúng :00
-];
-const policyFor = (lessonLen: number) =>
-  SLOT_POLICIES.find(p => p.lesson === lessonLen) || { lesson: lessonLen, slot: 60, gridStep: 30 };
-
-// Chia chuỗi CSV -> mảng string
-const parseCSV = (v?: string) =>
-  (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []) as string[];
-
-// Chuẩn hóa ngày -> key JSON trong weeklyAvailability
-const DAY_INDEX_TO_KEY = ['mon','tue','wed','thu','fri','sat','sun'];
-const normalizeDays = (raw: string[]): string[] => {
-  if (!raw.length) return [];
-  return raw.map(d => {
-    const n = Number(d);
-    if (!Number.isNaN(n) && n >= 0 && n <= 6) return DAY_INDEX_TO_KEY[n];
-    const s = d.toLowerCase().slice(0,3);
-    switch (s) {
-      case 'mon': return 'mon';
-      case 'tue': return 'tue';
-      case 'wed': return 'wed';
-      case 'thu': return 'thu';
-      case 'fri': return 'fri';
-      case 'sat': return 'sat';
-      case 'sun': return 'sun';
-      default:    return '';
-    }
-  }).filter(Boolean);
-};
-
-// Map timeOfDay id -> [startMin, endMin)
-const SLOT_RANGES: Record<string, [number, number]> = {
-  early_morning: [5*60,  7*60],    // 05:00–07:00
-  morning:       [7*60,  11*60],   // 07:00–11:00
-  noon:          [11*60, 13*60],   // 11:00–13:00
-  afternoon:     [13*60, 17*60],   // 13:00–17:00
-  evening:       [17*60, 19*60],   // 17:00–19:00
-  late_evening:  [19*60, 22*60],   // 19:00–22:00
-  late_night:    [22*60, 23*60],   // 22:00–23:00
-};
-
-const toMinutes = (hhmm: string): number => {
-  const [h, m] = (hhmm || '').split(':').map(n => parseInt(n, 10));
-  if (Number.isNaN(h) || Number.isNaN(m)) return -1;
-  return h * 60 + m;
-};
-
-const overlaps = (aStart: number, aEnd: number, bStart: number, bEnd: number) =>
-  Math.max(aStart, bStart) < Math.min(aEnd, bEnd);
-
-// Kiểm tra 1 teacher có “rảnh” giao với tập slot & ngày đã chọn không
-const matchAvailability = (
-  weeklyAvailability: any,
-  dayKeys: string[],                 // ['fri','sat'] ...
-  slotRanges: Array<[number,number]> // [[1140,1320], ...] đơn vị phút
-): boolean => {
-  if (!weeklyAvailability) return false;
-
-  // Nếu user không chọn ngày -> coi như “mỗi ngày đều xét”
-  const days = dayKeys.length ? dayKeys : DAY_INDEX_TO_KEY;
-
-  // Nếu không chọn khung giờ -> coi như “cả ngày”
-  const slots = (slotRanges && slotRanges.length) ? slotRanges : [[0, 24 * 60]];
-
-  for (const d of days) {
-    const intervals: Array<{start:string; end:string}> = weeklyAvailability[d] || [];
-    if (!intervals.length) continue;
-
-    for (const itv of intervals) {
-      const s = toMinutes(itv.start);
-      const e = toMinutes(itv.end);
-      if (s < 0 || e < 0 || s >= e) continue;
-
-      for (const [rs, re] of slots) {
-        if (overlaps(s, e, rs, re)) return true;
-      }
-    }
-  }
-  return false;
-};
 
 @Injectable()
 export class TeachersService {
-  constructor(@InjectRepository(Teacher) private readonly repo: Repository<Teacher>,
-  @InjectRepository(Review) private readonly reviewRepo: Repository<Review>,
+  constructor(
+    @InjectRepository(Teacher) private readonly repo: Repository<Teacher>,
+    @InjectRepository(Review) private readonly reviewRepo: Repository<Review>,
+    @InjectRepository(TeacherSlot) private readonly slotRepo: Repository<TeacherSlot>,
+    private readonly pricing: PricingService,
+     private readonly dataSource: DataSource,    
 ) {}
+
+  // Chuyển ['mon 07:30-08:30', ...] -> { day,start,end }[]
+  private parseKeys(keys: string[]) {
+    return keys.map((k) => {
+      const [day, range] = k.trim().split(/\s+/);
+      const [start, end] = range.split('-');
+      return { day, start, end };
+    });
+  }
 
   /** Chuẩn hóa + validate weeklyAvailability theo policy */
   private sanitizeWeeklyAvailability(
@@ -129,6 +52,9 @@ export class TeachersService {
       for (const it of arr) {
         let s = toMin(it?.start), e = toMin(it?.end);
         if (s < 0 || e < 0 || s >= e) continue;
+        // clamp biên trước:
+        s = Math.max(0, s);
+        e = Math.min(24 * 60, e);
 
         // biên phải nằm trên lưới step
         if (s % gridStep !== 0 || e % gridStep !== 0) {
@@ -143,8 +69,7 @@ export class TeachersService {
             `Interval ${it.start}-${it.end} on ${day} must be a multiple of ${slot} minutes for lesson length ${lessonLengthMinutes}`,
           );
         }
-        s = Math.max(0, s);
-        e = Math.min(24 * 60, e);
+
         if (s < e) norm.push([s, e]);
       }
 
@@ -191,19 +116,74 @@ export class TeachersService {
     return result;
   }
 
+  /** Đồng bộ bảng teacher_slots từ weeklyAvailability đã chuẩn hóa */
+  private async syncSlotsFromWeekly(teacherId: number, weekly: Record<DayKey, Array<{ start: string; end: string }>>, lessonLengthMinutes: number) {
+    const { slot } = policyFor(lessonLengthMinutes);
+    const want: Array<{ day: DayKey; start: string; end: string }> = [];
+    for (const day of DAY_KEYS) {
+      (weekly?.[day] || []).forEach(({ start, end }) => {
+        let s = toMin(start), e = toMin(end);
+        for (let m = s; m + slot <= e; m += slot) {
+          want.push({ day, start: toHHMM(m), end: toHHMM(m + slot) });
+        }
+      });
+    }
+
+    // Lấy slot hiện có
+    const exists = await this.slotRepo.find({ where: { teacherId } });
+    const key = (d:string,s:string,e:string) => `${d} ${s}-${e}`;
+    const existsMap = new Map(exists.map(s => [key(s.day, s.start, s.end), s]));
+
+    // Active/insert theo "want"
+    const keepKeys: string[] = [];
+    for (const w of want) {
+      const k = key(w.day, w.start, w.end);
+      keepKeys.push(k);
+      const cur = existsMap.get(k);
+      if (cur) {
+        if (!cur.isActive) { cur.isActive = true; await this.slotRepo.save(cur); }
+      } else {
+        const row = this.slotRepo.create({ teacherId, day: w.day, start: w.start, end: w.end, isActive: true, capacity: 1, reservedCount: 0 });
+        await this.slotRepo.save(row);
+      }
+    }
+
+    // Deactivate các slot thừa (không xóa để giữ reservedCount history)
+    const toDisable = exists.filter(s => !keepKeys.includes(key(s.day, s.start, s.end)) && s.isActive);
+    if (toDisable.length) {
+      await this.slotRepo.save(toDisable.map(s => ({ ...s, isActive: false })));
+    }
+  }
+
   async create(dto: CreateTeacherDto) {
+    const lessonLen = dto['lessonLengthMinutes'] ?? 45;
+    const weekly = this.sanitizeWeeklyAvailability(dto.weeklyAvailability, lessonLen);
+
     const t = this.repo.create({
       ...dto,
+      lessonLengthMinutes: lessonLen,
+      weeklyAvailability: weekly,
       rating: dto?.['rating'] ?? 0,
       reviewsCount: dto?.['reviewsCount'] ?? 0,
     });
-    return this.repo.save(t);
+    const saved = await this.repo.save(t);
+    await this.syncSlotsFromWeekly(saved.id, weekly, lessonLen);
+    return saved;
   }
 
   async update(id: number, dto: UpdateTeacherDto) {
     const cur = await this.repo.preload({ id, ...dto });
     if (!cur) throw new NotFoundException('Teacher not found');
-    return this.repo.save(cur);
+    const lessonLen = dto['lessonLengthMinutes'] ?? cur.lessonLengthMinutes ?? 45;
+    if (dto.weeklyAvailability !== undefined) {
+      cur.weeklyAvailability = this.sanitizeWeeklyAvailability(dto.weeklyAvailability, lessonLen);
+    }
+    if (dto['lessonLengthMinutes'] !== undefined) cur.lessonLengthMinutes = lessonLen;
+    const saved = await this.repo.save(cur);
+    if (dto.weeklyAvailability !== undefined || dto['lessonLengthMinutes'] !== undefined) {
+      await this.syncSlotsFromWeekly(saved.id, saved.weeklyAvailability, lessonLen);
+    }
+    return saved;
   }
 
   async findOne(id: number) {
@@ -324,11 +304,171 @@ export class TeachersService {
     return {
       teacher: {
         ...teacher,
-        weeklyAvailabilitySlots,    // <- các block đã tách
+        weeklyAvailabilitySlots,    // 
         slotMinutes: slot,          // 60 | 90 | 120
         gridStepMinutes: gridStep,  // 60 | 30 | 60
       },
       rating: { average: Number(avg ?? 0), total: Number(count ?? 0) },
     };
+  }
+
+  // Lấy thông tin giảng viên cho order, bao gồm policy + discount
+  private roundMoney(n: number) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+  // Đếm tổng slot/tuần từ weeklyAvailabilitySlots (đã tách block theo slot)
+  private countWeeklySlots(
+    weekly: Record<DayKey, Array<{ start: string; end: string }>>
+  ): number {
+    if (!weekly) return 0;
+    return (['mon','tue','wed','thu','fri','sat','sun'] as DayKey[])
+      .reduce((s, d) => s + (weekly[d]?.length || 0), 0);
+  }
+
+  /** API cho trang đặt gói — thêm bookedKeys */
+  async getOrderOptions(id: number) {
+    const teacher = await this.repo.findOne({ where: { id } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+
+    const { slot } = policyFor(teacher.lessonLengthMinutes);
+    const weeklyAvailabilitySlots = this.expandToSlots(teacher.weeklyAvailability, teacher.lessonLengthMinutes);
+
+    // lấy các slot đã full (reservedCount >= capacity & isActive)
+    const full = await this.slotRepo.find({
+      where: { teacherId: id, isActive: true },
+    });
+    const bookedKeys = full
+      .filter(s => s.reservedCount >= s.capacity)
+      .map(s => `${s.day} ${s.start}-${s.end}`);
+
+    const capacityPerWeek = this.countWeeklySlots(weeklyAvailabilitySlots);
+    const maxLessonsPerWeek = Math.min(5, capacityPerWeek);
+
+    const effMin = teacher.lessonLengthMinutes;
+    const hourlyRate = Number(teacher.hourlyRate || 0);
+    const basePerLesson = hourlyRate * (effMin / 60);
+
+    const plans = await this.pricing.getActivePlans();
+    const packages = plans.map(p => {
+      const lessons = Math.ceil((p.hours * 60) / effMin);
+      const gross = Math.round((lessons * basePerLesson + Number.EPSILON) * 100) / 100;
+      const discountPct = p.discountPct ?? 0;
+      const discount = Math.round((gross * discountPct + Number.EPSILON) * 100) / 100;
+      const total = Math.round((gross - discount + Number.EPSILON) * 100) / 100;
+      const pricePerLesson = Math.round((total / lessons + Number.EPSILON) * 100) / 100;
+      return { hours: p.hours, lessons, gross, discountPct, discount, total, pricePerLesson };
+    });
+
+    return {
+      teacher: {
+        id: teacher.id,
+        fullName: teacher.fullName,
+        avatarUrl: teacher.avatarUrl,
+        country: teacher.country,
+        hourlyRate: hourlyRate,
+        lessonLengthMinutes: teacher.lessonLengthMinutes,
+      },
+      slotMinutes: slot,
+      weeklyAvailabilitySlots,
+      bookedKeys,               
+      capacityPerWeek,
+      maxLessonsPerWeek,
+      pricePerLessonBase: Math.round((basePerLesson + Number.EPSILON) * 100) / 100,
+      packages,
+    };
+  }
+  
+  /** Giữ chỗ atomically, idempotent theo enrollmentId (MySQL) */
+  async tryReserveSlots(teacherId: number, keys: string[], enrollmentId?: number) {
+    if (!keys?.length) return;
+
+    const slots = this.parseKeys(keys);
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+    try {
+      // (A) ledger: idempotent (INSERT IGNORE / ON DUPLICATE KEY DO NOTHING)
+      if (enrollmentId) {
+        await qr.manager
+          .createQueryBuilder()
+          .insert()
+          .into(TeacherSlotReservation)
+          .values(slots.map(s => ({
+            enrollmentId,
+            teacherId,
+            day: s.day,
+            start: s.start,
+            end: s.end,
+          })))
+          .orIgnore() // MySQL
+          .execute();
+      }
+
+      // (B) tăng reservedCount nếu còn chỗ
+      for (const s of slots) {
+        const res = await qr.manager
+          .createQueryBuilder()
+          .update(TeacherSlot)
+          .set({ reservedCount: () => 'reservedCount + 1' })
+          .where(
+            'teacherId = :tid AND day = :day AND start = :start AND `end` = :end AND isActive = true AND reservedCount < capacity',
+            { tid: teacherId, day: s.day, start: s.start, end: s.end },
+          )
+          .execute();
+
+        if (!res.affected) {
+          // rollback ledger item (nếu có)
+          if (enrollmentId) {
+            await qr.manager.delete(TeacherSlotReservation, {
+              enrollmentId, teacherId, day: s.day, start: s.start, end: s.end,
+            });
+          }
+          throw new ConflictException(`Slot ${s.day} ${s.start}-${s.end} đã đầy hoặc không tồn tại.`);
+        }
+      }
+
+      await qr.commitTransaction();
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      await qr.release();
+    }
+  }
+
+  /** Nhả chỗ; nếu có enrollmentId -> chỉ nhả khi ledger có record (idempotent) */
+  async releaseSlots(teacherId: number, keys: string[], enrollmentId?: number) {
+    if (!keys?.length) return;
+
+    const slots = this.parseKeys(keys);
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+    try {
+      for (const s of slots) {
+        if (enrollmentId) {
+          const existed = await qr.manager.findOne(TeacherSlotReservation, {
+            where: { enrollmentId, teacherId, day: s.day, start: s.start, end: s.end },
+            lock: { mode: 'pessimistic_write' },
+          });
+          if (!existed) continue; // chưa/không giữ -> bỏ qua
+          await qr.manager.delete(TeacherSlotReservation, { id: existed.id });
+        }
+
+        await qr.manager
+          .createQueryBuilder()
+          .update(TeacherSlot)
+          .set({ reservedCount: () => 'GREATEST(reservedCount - 1, 0)' })
+          .where('teacherId = :tid AND day = :day AND start = :start AND `end` = :end', {
+            tid: teacherId, day: s.day, start: s.start, end: s.end,
+          })
+          .execute();
+      }
+      await qr.commitTransaction();
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      await qr.release();
+    }
   }
 }

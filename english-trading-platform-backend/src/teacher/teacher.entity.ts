@@ -1,7 +1,6 @@
 // src/teacher/teacher.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Review } from '../review/review.entity';
-import { LessonPackage } from '../lesson-package/lesson-package.entity';
 import { Blog } from 'src/blog/blog.entity';
 import { Lesson } from '../lesson/lesson.entity';
 import { Enrollment } from '../enrollment/enrollment.entity';
@@ -67,7 +66,6 @@ export class Teacher {
 
 
   @OneToMany(() => Review, review => review.teacher) reviews: Review[];
-  @OneToMany(() => LessonPackage, p => p.teacher, { cascade: true }) lessonPackages: LessonPackage[];
   @OneToMany(() => Blog, (b) => b.author) blogs: Blog[];
   @OneToMany(() => Lesson, l => l.teacher) lessons: Lesson[];
   @OneToMany(() => Enrollment, e => e.teacher) enrollments: Enrollment[];

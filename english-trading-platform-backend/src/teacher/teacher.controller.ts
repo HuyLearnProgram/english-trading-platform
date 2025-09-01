@@ -51,4 +51,9 @@ export class TeachersController {
     ]);
     return { ...m, windows: cfg.windows, thresholds: cfg.thresholds };
   }
+
+  @Get(':id/order-options')
+  orderOptions(@Param('id', ParseIntPipe) id: number) {
+    return this.service.getOrderOptions(id);
+  }
 }

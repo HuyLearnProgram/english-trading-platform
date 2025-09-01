@@ -21,6 +21,7 @@ import { RefundRequestModule } from './refund/refund-request.module';
 import { MetricThresholdsModule } from './config/metric-thresholds.module';
 import { NotificationModule } from './notification/notification.module';
 import { MailModule } from './mail/mail.module';
+import { PricingModule } from './pricing/pricing.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { MailModule } from './mail/mail.module';
     MetricThresholdsModule,
     NotificationModule,
     MailModule,
+    PricingModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],

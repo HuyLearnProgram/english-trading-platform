@@ -1,3 +1,4 @@
+// src/enrollment/enrollment.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Teacher } from '../teacher/teacher.entity';
 
@@ -15,8 +16,24 @@ export class Enrollment {
   @JoinColumn({ name: 'teacherId' })
   teacher: Teacher;
 
-  @Column({ type: 'varchar' }) status: OrderStatus;  // chỉ tính renewal trên 'paid'
-  @Column({ type: 'int', default: 0 }) hoursPurchased: number;
+  // Trạng thái đơn
+  @Column({ type: 'varchar' }) status: OrderStatus;
+
+  // ---- Thông tin gói & snapshot giá tại thời điểm mua ----
+  @Column({ type: 'int' })    planHours: number;                 // gói đã chọn (30/36/60/...)
+  @Column({ type: 'int' })    lessons: number;                   // số buổi suy ra từ planHours
+  @Column({ type: 'int' })    lessonLengthMinutesSnapshot: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2 }) hourlyRateSnapshot: number;     // đơn giá/giờ GV tại thời điểm mua
+  @Column({ type: 'float' })  discountPctApplied: number;        // 0..1
+  @Column({ type: 'decimal', precision: 12, scale: 2 }) unitPriceBeforeDiscount; // = hourlyRateSnapshot*(lessonLength/60)
+  @Column({ type: 'decimal', precision: 12, scale: 2 }) gross;
+  @Column({ type: 'decimal', precision: 12, scale: 2 }) discount;
+  @Column({ type: 'decimal', precision: 12, scale: 2 }) total;
+  @Column({ type: 'varchar', default: 'VND' }) currency: string;
+
+  // ---- Tuỳ chọn lịch do HS chọn lúc order (không bắt buộc) ----
+  @Column({ type: 'int', default: 1 }) lessonsPerWeek: number;
+  @Column({ type: 'json', nullable: true }) preferredSlots?: string[]; // ['mon 09:00-09:45', ...]
 
   @CreateDateColumn() createdAt: Date;
 }
