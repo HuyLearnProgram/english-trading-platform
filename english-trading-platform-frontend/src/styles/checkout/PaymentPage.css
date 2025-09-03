@@ -100,12 +100,20 @@
 
 .paypal-cta { 
   font-weight:800; color:#fff;
-  background: #ffc439; 
+  background: linear-gradient(90deg,#ffc439,#fbbd2b); 
   /* color: #111827;  */
-  box-shadow: 0 6px 18px rgba(11,95,255,0.22);
+  box-shadow: 0 6px 18px rgba(249, 221, 93, 0.22);
   transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
 }
 .paypal-cta:disabled { opacity: .7; cursor: not-allowed; }
+.paypal-cta:hover:not(:disabled){
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(249, 221, 93, 0.22);
+}
+.paypal-cta:active:not(:disabled){
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(249, 221, 93, 0.22);
+}
 .paypal-mark {
   width: 40px;
   border-radius:8px;
