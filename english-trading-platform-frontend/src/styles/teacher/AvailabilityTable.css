@@ -19,11 +19,11 @@
 }
 
 /* giữ lại style cũ của bạn, chỉ bổ sung: */
-.avail-grid { width:100%; border-collapse:separate; border-spacing:8px; }
+/* .avail-grid { width:100%; border-collapse:separate; border-spacing:8px; }
 .avail-grid th { text-align:left; font-weight:700; padding:8px 6px; color:#0f172a; }
 .avail-grid td { background:#fff; border:1px dashed #e5e7eb; min-width:120px; height:52px; border-radius:10px; vertical-align:middle; }
 .avail-grid td.on { background:#f7fbff; border-color:#dbeafe; cursor:pointer; }
 .avail-grid td.on:hover { box-shadow:0 0 0 3px rgba(37,99,235,0.12) inset; }
 .avail-grid td .slot { font-size:13px; color:#0f172a; padding:6px 10px; border-radius:8px; text-align:center; }
 .avail-grid td.picked { background:#f0fff4; border-color:#86efac; }
-.avail-grid td.full { background:#f9fafb; border-color:#e5e7eb; cursor:not-allowed; opacity:.55; }
+.avail-grid td.full { background:#f9fafb; border-color:#e5e7eb; cursor:not-allowed; opacity:.55; } */

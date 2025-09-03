@@ -21,6 +21,8 @@ import AdminUsers from '@pages/admin/AdminUsers';
 // --- Auth pages ---
 import GoogleCallback from '@pages/auth/GoogleCallback';
 import OrderPage from './pages/guest/OrderPage';
+import PaymentPage from './pages/checkout/PaymentPage';
+import PaymentResult from './pages/checkout/PaymentResult';
 
 const App = () => {
   return (
@@ -41,6 +43,8 @@ const App = () => {
           <Route path="/blog/search" element={<BlogCategoryPage />} />
           <Route path="/teacher/:id" element={<TeacherProfile/>} />
           <Route path="/order/:id" element={<OrderPage />} />
+          <Route path="/checkout/:id" element={<PaymentPage />} />
+          <Route path="/checkout/result" element={<PaymentResult />} />
         </Route>
 
         {/* ===== ADMIN (yêu cầu role admin) ===== */}

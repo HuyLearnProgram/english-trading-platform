@@ -7,3 +7,6 @@ export const apiPurchaseEnrollment = (payload) =>
     method: "post",
     data: payload,
   });
+
+export const apiGetEnrollment = (id) => 
+  axiosInstance({url: `/enrollments/${id}`, method:"get"});

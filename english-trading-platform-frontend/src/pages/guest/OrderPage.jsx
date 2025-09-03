@@ -80,7 +80,7 @@ export default function OrderPage() {
 
   const canSubmit = picked.length === lessonsPerWeek && maxWeek > 0 && !submitting;
 
-  const placeOrder = async () => {
+  const goCheckout = async () => {
     setErrorMsg('');
     setSuccess(null);
     if (!user?.id) {
@@ -101,7 +101,8 @@ export default function OrderPage() {
         status: 'pending',
       };
       const { data: created } = await apiPurchaseEnrollment(payload);
-      setSuccess(created);
+      // chuyển sang trang thanh toán
+      navigate(`/checkout/${created.id}`, { state: { enrollment: created } });
     } catch (err) {
       console.error(err);
       setErrorMsg(err?.response?.data?.message || 'Đặt hàng không thành công. Vui lòng thử lại.');
@@ -185,11 +186,11 @@ export default function OrderPage() {
                 ? 'Giáo viên chưa mở lịch'
                 : picked.length !== lessonsPerWeek
                   ? 'Hãy chọn đủ số khung giờ/tuần'
-                  : 'Tạo đơn (chưa thanh toán)'
+                  : 'Chọn phương thức thanh toán'
             }
-            onClick={placeOrder}
+            onClick={goCheckout}
           >
-            {submitting ? 'Đang tạo đơn…' : 'Tạo đơn (chưa thanh toán)'}
+            {submitting ? 'Đang tạo đơn…' : 'Chọn phương thức thanh toán'}
           </button>
 
           <div className="muted small">Bạn có thể chọn/đổi lịch chi tiết sau khi thanh toán.</div>
