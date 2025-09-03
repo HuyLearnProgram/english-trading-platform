@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Enrollment } from 'src/enrollment/enrollment.entity';
 import { TeachersService } from 'src/teacher/teacher.service';
 import { buildSortedQuery, formatVNDate, hmacSHA512 } from './utils/vnpay.util';
+import { postForm as zlpPostForm, buildAppTransId, hmacSHA256Hex } from './utils/zalopay.util';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentsService {
@@ -14,7 +16,7 @@ export class PaymentsService {
     @InjectRepository(Enrollment) private readonly enrollRepo: Repository<Enrollment>,
     private readonly teachers: TeachersService,
   ) {}
-
+   /** ----- VNPAY SERVICE ----- */
   private vnp() {
     const vnp_TmnCode    = this.cfg.get<string>('VNP_TMN_CODE');
     const vnp_HashSecret = this.cfg.get<string>('VNP_HASH_SECRET');
@@ -208,13 +210,323 @@ export class PaymentsService {
     }
   }
 
+
+   /** ----- ZALOPAY SERVICE ----- */
+   private zlp() {
+    const appId = this.cfg.get<string>('ZLP_APP_ID');
+    const key1 = this.cfg.get<string>('ZLP_KEY1');
+    const key2 = this.cfg.get<string>('ZLP_KEY2');
+    const url  = this.cfg.get<string>('ZLP_CREATE_ORDER_URL');
+    const callbackUrl = this.cfg.get<string>('ZLP_CALLBACK_URL');
+    const returnUrl   = this.cfg.get<string>('ZLP_RETURN_URL') || this.cfg.get<string>('FRONTEND_URL') + '/checkout/result';
+    if (!appId || !key1 || !key2 || !url || !callbackUrl) throw new Error('Missing ZaloPay env config');
+    return { appId, key1, key2, url, callbackUrl, returnUrl };
+  }
+
+  /** Tạo order ZaloPay và trả checkoutUrl */
+  async createZaloPayCheckout(enrollmentId: number) {
+    const en = await this.enrollRepo.findOne({ where: { id: enrollmentId } });
+    if (!en) throw new BadRequestException('Enrollment not found');
+    if (en.status === 'paid') throw new ConflictException('Enrollment already paid');
+
+    // đánh dấu phương thức
+    if ((en as any).paymentMethod !== 'zalopay') {
+      (en as any).paymentMethod = 'zalopay';
+      await this.enrollRepo.save(en);
+    }
+
+    const { appId, key1, url, callbackUrl, returnUrl } = this.zlp();
+    const amount = Math.round(Number(en.total));
+    const apptransid = buildAppTransId(en.id);
+    const apptime = Date.now().toString();
+
+    const embeddata = JSON.stringify({
+      redirecturl: returnUrl,
+      callbackurl: callbackUrl,
+      merchantinfo: `enrollment#${en.id}`,
+    });
+
+    const items = JSON.stringify([
+      { itemid: `plan_${en.planHours}`, itemname: 'English 1-1 package', itemprice: amount, itemquantity: 1 },
+    ]);
+
+    const params: Record<string, string> = {
+      appid: String(appId),
+      appuser: String(en.studentId),
+      apptime,
+      amount: String(amount),
+      apptransid,
+      embeddata,
+      item: items,
+      description: `Thanh toan goi hoc #${en.id}`,
+      bankcode: 'zalopayapp',
+    };
+
+    // MAC = HMACSHA256(key1, appid|apptransid|appuser|amount|apptime|embeddata|item)
+    const signData = [
+      params.appid,
+      params.apptransid,
+      params.appuser,
+      params.amount,
+      params.apptime,
+      params.embeddata,
+      params.item,
+    ].join('|');
+    params['mac'] = hmacSHA256Hex(key1, signData);
+
+    const zres: any = await zlpPostForm(url, params);
+    if (zres.returncode !== 1) {
+      throw new BadRequestException(zres.returnmessage || 'ZaloPay create order failed');
+    }
+    // zres: orderurl | deeplink | zptranstoken ...
+    return { checkoutUrl: zres.orderurl, zptranstoken: zres.zptranstoken };
+  }
+
+  /** IPN ZaloPay: verify MAC (key2) + chốt đơn (idempotent) */
+  async handleZaloPayCallback(body: any) {
+    try {
+      const { key2 } = this.zlp();
+      const reqData = body?.data;
+      const reqMac  = body?.mac;
+      const macLocal = hmacSHA256Hex(key2, reqData || '');
+      if (macLocal !== reqMac) {
+        return { returncode: -1, returnmessage: 'mac not match' };
+      }
+
+      const data = JSON.parse(reqData); // { appid, apptransid, zptransid, amount, ... }
+      const apptransid: string = data.apptransid;
+      const zptransid: string  = data.zptransid;
+      const amount: number     = Number(data.amount || 0);
+
+      const orderId = Number(String(apptransid || '').split('_')[1] || 0);
+      const en = await this.enrollRepo.findOne({ where: { id: orderId } });
+      if (!en) return { returncode: 2, returnmessage: 'order not found' };
+      if (en.status === 'paid') return { returncode: 1, returnmessage: 'OK' };
+
+      const expect = Math.round(Number(en.total));
+      if (expect !== Math.round(amount)) return { returncode: -1, returnmessage: 'amount mismatch' };
+
+      // (giữ chỗ) — optional
+      if (Array.isArray(en.preferredSlots) && en.preferredSlots.length) {
+        try { await this.teachers.tryReserveSlots(en.teacherId, en.preferredSlots, en.id); }
+        catch (e) { this.logger.warn(`Reserve failed for #${en.id}: ${e instanceof Error ? e.message : e}`); }
+      }
+
+      (en as any).status = 'paid';
+      (en as any).paymentMethod = 'zalopay';
+      (en as any).paymentRef = zptransid;
+      (en as any).paymentMeta = { ...(en as any).paymentMeta, zptransid, apptransid };
+      await this.enrollRepo.save(en);
+
+      return { returncode: 1, returnmessage: 'OK' };
+    } catch (e) {
+      this.logger.error('ZLP callback error', e);
+      // 0 = ZaloPay sẽ retry
+      return { returncode: 0, returnmessage: 'server error' };
+    }
+  }
+
+  /** DEV: xác nhận theo tham số return URL (không cần IPN) */
+  async confirmZaloPayByReturn(query: any) {
+    try {
+      // Thực tế ZaloPay khuyến nghị chốt qua IPN; đây là fallback DEV.
+      const apptransid = query?.apptransid || query?.appTransId || '';
+      const orderId = Number(String(apptransid).split('_')[1] || query?.orderId || 0);
+      if (!orderId) return { ok: false, reason: 'missing-order' };
+
+      const en = await this.enrollRepo.findOne({ where: { id: orderId } });
+      if (!en) return { ok: false, reason: 'not-found', orderId };
+
+      // status có thể là '1'/'success' — linh hoạt cho DEV
+      const status = String(query?.status ?? query?.returncode ?? query?.code ?? '').toLowerCase();
+      const ok = status === '1' || status === 'success' || status === '00';
+
+      if (!ok) return { ok: false, reason: 'gateway-declined', code: status, orderId };
+
+      if (en.status !== 'paid') {
+        if (Array.isArray(en.preferredSlots) && en.preferredSlots.length) {
+          try { await this.teachers.tryReserveSlots(en.teacherId, en.preferredSlots, en.id); }
+          catch (e: any) { this.logger.warn(`Reserve failed for #${en.id}: ${e?.message}`); }
+        }
+        (en as any).status = 'paid';
+        (en as any).paymentMethod = 'zalopay';
+        (en as any).paymentRef = query?.zptransid || (en as any).paymentRef;
+        (en as any).paymentMeta = { ...(en as any).paymentMeta, apptransid, zptransid: query?.zptransid, devReturn: true };
+        await this.enrollRepo.save(en);
+      }
+
+      const amount = Number(query?.amount || en.total);
+      return { ok: true, orderId, amount };
+    } catch (e) {
+      this.logger.error('confirmZaloPayByReturn error', e);
+      return { ok: false, reason: 'unhandled' };
+    }
+  }
+
+
+  /** ----- PAYPAL SERVICE ----- */
+  private paypal() {
+    const env = this.cfg.get<string>('PAYPAL_ENV') || 'sandbox';
+    const base =
+      env === 'live'
+        ? 'https://api-m.paypal.com'
+        : 'https://api-m.sandbox.paypal.com';
+
+    const clientId = this.cfg.get<string>('PAYPAL_CLIENT_ID');
+    const secret   = this.cfg.get<string>('PAYPAL_CLIENT_SECRET');
+    const returnUrl= this.cfg.get<string>('PAYPAL_RETURN_URL');
+    const cancelUrl= this.cfg.get<string>('PAYPAL_CANCEL_URL');
+    const currency = (this.cfg.get<string>('PAYPAL_CURRENCY') || 'USD').toUpperCase();
+    const vndUsd   = Number(this.cfg.get<string>('PAYPAL_VND_USD') || 24000); // dùng khi cần convert
+
+    if (!clientId || !secret || !returnUrl || !cancelUrl) {
+      throw new Error('Missing PayPal env config');
+    }
+    return { base, clientId, secret, returnUrl, cancelUrl, currency, vndUsd };
+  }
+
+  private async getPaypalToken() {
+    const { base, clientId, secret } = this.paypal();
+    const body = new URLSearchParams({ grant_type: 'client_credentials' }).toString();
+    const { data } = await axios.post(
+      `${base}/v1/oauth2/token`,
+      body,
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        auth: { username: clientId, password: secret },
+        timeout: 15000,
+      }
+    );
+    return data?.access_token as string;
+  }
+
+  /** Tạo PayPal Order cho enrollment và trả về approval URL */
+  async createPaypalCheckout(enrollmentId: number) {
+    const en = await this.enrollRepo.findOne({ where: { id: enrollmentId } });
+    if (!en) throw new BadRequestException('Enrollment not found');
+    if (en.status === 'paid') throw new ConflictException('Enrollment already paid');
+
+    // set phương thức
+    if (en.paymentMethod !== 'paypal') {
+      en.paymentMethod = 'paypal' as any;
+      await this.enrollRepo.save(en);
+    }
+
+    const { base, returnUrl, cancelUrl, currency, vndUsd } = this.paypal();
+    const token = await this.getPaypalToken();
+
+    // TÍNH amount:
+    // - Nếu bạn để PAYPAL_CURRENCY=USD mà giá en.total đang là VND -> convert tạm theo PAYPAL_VND_USD
+    let value: string;
+    if (currency === 'VND') {
+      // PayPal KHÔNG hỗ trợ VND ở đa số tài khoản. Chỉ dùng nếu tài khoản của bạn thực sự hỗ trợ.
+      value = Math.round(Number(en.total)).toString();
+    } else {
+      const usd = Math.max(0.01, Math.round((Number(en.total) / Math.max(1, vndUsd)) * 100) / 100);
+      value = usd.toFixed(2);
+    }
+
+    const orderPayload = {
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          reference_id: String(en.id),
+          amount: {
+            currency_code: currency,
+            value,
+          },
+          description: `Enrollment #${en.id}`,
+        },
+      ],
+      application_context: {
+        brand_name: 'Antoree',
+        user_action: 'PAY_NOW',
+        return_url: returnUrl,   // PayPal redirect về đây sau khi approve
+        cancel_url: cancelUrl,   // Cancel → mình sẽ 302 về FE với kết quả fail
+      },
+    };
+
+    const { data: order } = await axios.post(
+      `${base}/v2/checkout/orders`,
+      orderPayload,
+      { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
+    );
+
+    const approve = (order?.links || []).find((l: any) => l.rel === 'approve')?.href;
+    if (!approve) throw new Error('No approval link from PayPal');
+
+    return { checkoutUrl: approve, orderId: order?.id };
+  }
+
+  /** Xác nhận (CAPTURE) sau khi PayPal redirect về return URL (dev) */
+  async confirmPaypalByReturn(query: any) {
+    try {
+      const orderId = String(query?.token || '').trim(); // PayPal gửi token=orderId
+      if (!orderId) return { ok: false, reason: 'missing-token' };
+
+      const { base } = this.paypal();
+      const token = await this.getPaypalToken();
+
+      // CAPTURE
+      const { data: capture } = await axios.post(
+        `${base}/v2/checkout/orders/${orderId}/capture`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
+      );
+
+      // PayPal order chứa purchase_units -> payments -> captures
+      const status = capture?.status || capture?.purchase_units?.[0]?.payments?.captures?.[0]?.status;
+      const refId  = capture?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+      const referenceId = capture?.purchase_units?.[0]?.reference_id;
+      const amountObj = capture?.purchase_units?.[0]?.payments?.captures?.[0]?.amount;
+
+      const enrollmentId = Number(referenceId || 0);
+      const en = await this.enrollRepo.findOne({ where: { id: enrollmentId } });
+      if (!en) return { ok: false, reason: 'not-found', orderId: enrollmentId };
+
+      const success = String(status).toUpperCase() === 'COMPLETED';
+
+      if (!success) {
+        return { ok: false, reason: 'gateway-declined', orderId: enrollmentId, code: status };
+      }
+
+      // Idempotent update
+      en.paymentMethod = 'paypal' as any;
+      en.paymentRef = refId || en.paymentRef;
+      en.paymentMeta = {
+        ...(en.paymentMeta || {}),
+        paypalOrderId: orderId,
+        captureStatus: status,
+        captureAmount: amountObj,
+      };
+
+      if (en.status !== 'paid') {
+        try {
+          if (Array.isArray(en.preferredSlots) && en.preferredSlots.length) {
+            await this.teachers.tryReserveSlots(en.teacherId, en.preferredSlots, en.id);
+          }
+        } catch (e: any) {
+          this.logger.warn(`Reserve slots failed for enrollment #${en.id}: ${e?.message}`);
+        }
+        en.status = 'paid';
+        await this.enrollRepo.save(en);
+      }
+
+      return { ok: true, orderId: en.id };
+    } catch (e) {
+      this.logger.error('confirmPaypalByReturn error', e);
+      return { ok: false, reason: 'unhandled' };
+    }
+  }
+
   // (optional) Nếu muốn Return URL trỏ thẳng về BE rồi BE 302 về FE:
-  async buildFrontendResultRedirect(ok: boolean, orderId?: number, code?: string) {
+  async buildFrontendResultRedirect(ok: boolean, orderId?: number, code?: string, provider?: string) {
     const fe = this.cfg.get<string>('FRONTEND_URL') || 'http://localhost:3001';
     const url = new URL('/checkout/result', fe);
     if (orderId) url.searchParams.set('orderId', String(orderId));
     url.searchParams.set('result', ok ? 'success' : 'fail');
     if (code) url.searchParams.set('code', code);
+    if (provider) url.searchParams.set('provider', provider);
     return url.toString();
   }
 }

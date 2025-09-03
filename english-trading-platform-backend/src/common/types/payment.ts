@@ -3,6 +3,7 @@ export const PAYMENT_METHODS = [
   'vnpay',
   'momo',
   'zalopay',
+  'paypal',
   'bank_transfer',
 ] as const;
 

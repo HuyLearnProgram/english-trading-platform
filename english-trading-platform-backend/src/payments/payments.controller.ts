@@ -27,7 +27,10 @@ export class PaymentsController {
       case 'vnpay':
         // createVnpayCheckout nên tự set en.paymentMethod = 'vnpay'
         return this.svc.createVnpayCheckout(enrollmentId, ip);
-
+      case 'zalopay':
+        return this.svc.createZaloPayCheckout(enrollmentId);
+      case 'paypal':
+        return this.svc.createPaypalCheckout(enrollmentId);
       // case 'stripe':
       //   return this.svc.createStripeCheckout(enrollmentId); // khi bạn thêm Stripe
 
@@ -35,6 +38,9 @@ export class PaymentsController {
         throw new BadRequestException('Unsupported provider');
     }
   }
+
+    /** ----- VNPAY ----- */
+
 
   /** Return URL cho browser (tuỳ bạn redirect về FE khác) */
   @Get('vnpay/return')
@@ -66,6 +72,44 @@ export class PaymentsController {
       result?.orderId,
       query?.vnp_ResponseCode,
     );
+    return { url };
+  }
+
+
+  /** ----- ZALOPAY ----- */
+
+
+  /** IPN (POST) — ZaloPay gọi server→server */
+  @Post('zalopay/callback')
+  async zaloPayCallback(@Body() body: any) {
+    return this.svc.handleZaloPayCallback(body);
+  }
+
+  /** DEV: cho phép return về BE trước rồi 302 về FE (khi test localhost) */
+  @Get('zalopay/return-dev')
+  @Redirect(undefined, 302)
+  async zaloPayReturnDev(@Query() query: any) {
+    const r = await this.svc.confirmZaloPayByReturn(query);
+    const url = await this.svc.buildFrontendResultRedirect(!!r?.ok, r?.orderId, query?.status || query?.code);
+    return { url };
+  }
+
+
+  /** ----- PAYPAL DEV FLOW (localhost) ----- */
+
+  @Get('paypal/return-dev')
+  @Redirect(undefined, 302)
+  async paypalReturnDev(@Query() query: any) {
+    const r = await this.svc.confirmPaypalByReturn(query); // capture ngay
+    const url = await this.svc.buildFrontendResultRedirect(!!r?.ok, r?.orderId, undefined, 'paypal');
+    return { url };
+  }
+
+  @Get('paypal/cancel-dev')
+  @Redirect(undefined, 302)
+  async paypalCancelDev(@Query() query: any) {
+    // Cancel thì không capture; chỉ quay lại FE và báo fail
+    const url = await this.svc.buildFrontendResultRedirect(false, Number(query?.orderId || 0), 'canceled', 'paypal');
     return { url };
   }
 }
