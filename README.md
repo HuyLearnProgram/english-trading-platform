@@ -194,7 +194,7 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ## Order
 ![Order](./background/order.png)
 ## Checkout/ Payment
-![Checkout](./background/checkout (1).png)
+![Checkout](./background/checkout.png)
 ![vnpay](./background/vnpay.png)
 ![zalopay.png](./background/zalopay.png)
 ![paypal](./background/paypal.png)
