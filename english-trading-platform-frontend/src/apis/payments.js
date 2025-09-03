@@ -14,3 +14,17 @@ export const apiVerifyVnpayReturn = (params) =>
     method: 'get',
     params,
   });
+
+export const apiStartZaloPayCheckout = (enrollmentId) =>
+  axiosInstance({ 
+    url: '/payments/checkout', 
+    method: 'post', 
+    data: { enrollmentId, provider: 'zalopay' } 
+  });
+
+export const apiStartPaypalCheckout = (enrollmentId) =>
+  axiosInstance({
+    url: '/payments/checkout',
+    method: 'post',
+    data: { enrollmentId, provider: 'paypal' },
+  });

@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { apiGetEnrollment } from '@apis/enrollment';
 import { apiStartVnpayCheckout } from '@apis/payments';
 import '@styles/checkout/PaymentPage.css';
+import { apiStartPaypalCheckout, apiStartZaloPayCheckout } from '../../apis/payments';
 
 export default function PaymentPage() {
   const { id } = useParams();                  // enrollmentId
@@ -10,8 +11,10 @@ export default function PaymentPage() {
   const { state } = useLocation();             // { enrollment? }
   const [en, setEn] = useState(state?.enrollment || null);
   const [loading, setLoading] = useState(!state?.enrollment);
-  const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState('');
+
+  // provider đang xử lý: 'vnpay' | 'zalopay' | null
+  const [paying, setPaying] = useState(null);
 
   useEffect(() => {
     if (state?.enrollment) return;
@@ -43,15 +46,44 @@ export default function PaymentPage() {
   }, [en]);
 
   const payWithVnpay = async () => {
-    if (!en?.id) return;
-    setSubmitting(true);
+    if (!en?.id || paying) return;
     setErr('');
+    setPaying('vnpay');
     try {
       const { data } = await apiStartVnpayCheckout(en.id);
-      window.location.href = data.checkoutUrl;        // chuyển sang trang VNPAY
+      window.location.href = data.checkoutUrl; // qua trang VNPAY
     } catch (e) {
-      setErr(e?.response?.data?.message || 'Không khởi tạo được phiên thanh toán.');
-      setSubmitting(false);
+      setErr(e?.response?.data?.message || 'Không khởi tạo được phiên thanh toán (VNPAY).');
+      setPaying(null);
+    }
+  };
+
+  const payWithZaloPay = async () => {
+    if (!en?.id || paying) return;
+    setErr('');
+    setPaying('zalopay');
+    try {
+      // BE trả về { checkoutUrl } — trỏ đến ZaloPay (orderurl/deeplink)
+      const { data } = await apiStartZaloPayCheckout(en.id);
+      // Desktop web: mở orderurl (web)
+      // Mobile app: deeplink (nếu backend trả deeplink thì có thể ưu tiên deeplink)
+      window.location.href = data.checkoutUrl;
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Không khởi tạo được phiên thanh toán (ZaloPay).');
+      setPaying(null);
+    }
+  };
+
+  const payWithPaypal = async () => {
+    if (!en?.id || paying) return;
+    setErr('');
+    setPaying('paypal');
+    try {
+      const { data } = await apiStartPaypalCheckout(en.id);
+      window.location.href = data.checkoutUrl; // approval link PayPal
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Không khởi tạo được phiên thanh toán (PayPal).');
+      setPaying(null);
     }
   };
 
@@ -98,22 +130,59 @@ export default function PaymentPage() {
             <div className="pay-title">ADD PAYMENT INFORMATION</div>
 
             <div className="pay-method">
+              {/* VNPAY */}
               <button
                 type="button"
-                className={`vnpay-cta ${submitting ? 'is-loading' : ''}`}
+                className={`pay-cta vnpay-cta ${paying === 'vnpay' ? 'is-loading' : ''}`}
                 onClick={payWithVnpay}
-                disabled={submitting}
+                disabled={!!paying}
                 aria-label="Thanh toán qua VNPAY"
               >
                 <img
-                  src="https://thuonghieumanh.vneconomy.vn/upload/vnpay.png"
+                  src="https://cdn-new.topcv.vn/unsafe/140x/https://static.topcv.vn/company_logos/cong-ty-cp-giai-phap-thanh-toan-viet-nam-vnpay-6194ba1fa3d66.jpg"
                   alt=""
                   className="vnpay-mark"
                 />
                 <span className="vnpay-text-cta">
                   Thanh toán qua <strong>VNPAY</strong>
                 </span>
-                {submitting && <span className="spinner" aria-hidden="true" />}
+                {paying === 'vnpay' && <span className="spinner" aria-hidden="true" />}
+              </button>
+              
+              {/* ZaloPay */}
+              <button
+                type="button"
+                className={`pay-cta zalopay-cta ${paying === 'zalopay' ? 'is-loading' : ''}`}
+                onClick={payWithZaloPay}
+                disabled={!!paying}
+                aria-label="Thanh toán qua ZaloPay"
+              >
+                <img
+                  src="https://docs.zalopay.vn/vi/img/zalopay-logo.png"
+                  alt="ZaloPay logo"
+                  className="pay-mark zalopay-mark"
+                />
+                <span className="zalopay-text-cta">
+                  Thanh toán qua <strong>ZaloPay</strong>
+                </span>
+                {paying === 'zalopay' && <span className="spinner" aria-hidden="true" />}
+              </button>
+
+              {/* PayPal */}
+              <button
+                type="button"
+                className={`pay-cta paypal-cta ${paying === 'paypal' ? 'is-loading' : ''}`}
+                onClick={payWithPaypal}
+                disabled={!!paying}
+                aria-label="Thanh toán qua PayPal"
+              >
+                <img
+                  src="https://www.paypalobjects.com/webstatic/icon/pp258.png"
+                  alt="PayPal"
+                  className="pay-mark paypal-mark"
+                />
+                <span className="paypal-text-cta">Thanh toán qua <strong>PayPal</strong></span>
+                {paying === 'paypal' && <span className="spinner" aria-hidden="true" />}
               </button>
             </div>
 

@@ -3,9 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { apiGetEnrollment } from '@apis/enrollment';
-// import { apiVerifyVnpayReturn } from '@apis/payments'; // không cần cho flow return-dev
 
-// (Optional) Map mã lỗi VNPAY -> thông điệp ngắn gọn
 const VNP_MESSAGES = {
   '00': 'Giao dịch thành công.',
   '07': 'Giao dịch nghi ngờ (khấu trừ).',
@@ -21,18 +19,33 @@ const VNP_MESSAGES = {
   '79': 'Giao dịch bị từ chối.',
 };
 
+// Thông điệp chung theo provider
+function explain(provider, code) {
+  switch ((provider || '').toLowerCase()) {
+    case 'vnpay':
+      return code && VNP_MESSAGES[code] ? `: ${VNP_MESSAGES[code]}` : '';
+    case 'zalopay':
+      // ZaloPay thường trả status/code khác nhau; bạn có thể map thêm khi cần
+      return code ? ` (ZaloPay: ${code})` : '';
+    case 'paypal':
+      // PayPal thường trả COMPLETED/CANCELED...
+      return code ? ` (PayPal: ${code})` : '';
+    default:
+      return code ? ` (${code})` : '';
+  }
+}
+
 export default function PaymentResult() {
   const [sp] = useSearchParams();
   const nav = useNavigate();
 
-  // return-dev sẽ đính sẵn các query này:
-  const result = sp.get('result'); // 'success' | 'fail'
-  const orderId = Number(sp.get('orderId') || sp.get('vnp_TxnRef'));
-  const code = sp.get('code') || sp.get('vnp_ResponseCode');
+  const result   = sp.get('result');    // 'success' | 'fail'
+  const provider = (sp.get('provider') || '').toLowerCase(); // 'vnpay' | 'zalopay' | 'paypal' ...
+  const orderId  = Number(sp.get('orderId') || sp.get('vnp_TxnRef'));
+  const code     = sp.get('code') || sp.get('vnp_ResponseCode') || sp.get('status');
 
   const [msg, setMsg] = useState('Đang xác minh thanh toán…');
 
-  // Nếu BE đã redirect về FE với ?result=..., thì hiển thị trực tiếp
   useEffect(() => {
     if (!result) return;
 
@@ -44,14 +57,14 @@ export default function PaymentResult() {
     }
 
     // fail
-    const reason = code && VNP_MESSAGES[code] ? ` (${VNP_MESSAGES[code]})` : '';
+    const reason = explain(provider, code);
     toast.error('Thanh toán thất bại.');
-    setMsg(`Thanh toán thất bại${reason ? `: ${reason}` : ''}.`);
-  }, [result, code, nav]);
+    setMsg(`Thanh toán thất bại${reason}`);
+  }, [result, code, provider, nav]);
 
-  // Fallback: nếu vì lý do nào đó không có ?result=..., poll trạng thái đơn
+  // Fallback: nếu không có ?result=..., poll trạng thái đơn như cũ
   useEffect(() => {
-    if (result) return; // đã xử lý ở block trên
+    if (result) return;
     if (!orderId || Number.isNaN(orderId)) {
       setMsg('Thiếu mã đơn.');
       return;
@@ -84,7 +97,7 @@ export default function PaymentResult() {
       }
     };
 
-    setMsg('Đang chờ xác nhận từ ngân hàng…');
+    setMsg('Đang chờ xác nhận từ cổng thanh toán…');
     check();
     intervalId = setInterval(check, 2000);
     return () => intervalId && clearInterval(intervalId);
@@ -95,12 +108,12 @@ export default function PaymentResult() {
       <h2>Kết quả thanh toán</h2>
       <p>{msg}</p>
 
-      {/* Cho người dùng xem mã giao dịch/QR nếu cần debug */}
       <div style={{ fontSize: 12, color: '#6b7280' }}>
         {typeof orderId === 'number' && !Number.isNaN(orderId) ? (
           <div>Mã đơn: #{orderId}</div>
         ) : null}
-        {code ? <div>Mã phản hồi: {code} {VNP_MESSAGES[code] ? `- ${VNP_MESSAGES[code]}` : ''}</div> : null}
+        {provider ? <div>Phương thức: {provider.toUpperCase()}</div> : null}
+        {code ? <div>Mã/Trạng thái: {code}</div> : null}
       </div>
 
       <button onClick={() => nav('/home')}>Về trang chủ</button>

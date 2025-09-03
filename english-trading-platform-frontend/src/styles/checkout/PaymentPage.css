@@ -1,5 +1,5 @@
 .checkout-container { max-width:1080px; margin:0 auto; padding:16px; color:#0f172a; }
-.checkout-grid { display:grid; grid-template-columns: 1.1fr 0.9fr; gap:20px; }
+.checkout-grid { display:grid; grid-template-columns: 0.7fr 0.4fr; gap:20px; }
 @media (max-width: 1024px){ .checkout-grid{ grid-template-columns:1fr; } }
 
 .summary-card, .pay-card {
@@ -25,39 +25,44 @@
   margin-bottom: 10px;
   font-weight: 600;
 }
-.pay-method { display: flex; }
-
+.pay-method { display: flex; flex-direction: column; }
+.pay-cta {
+  display: flex; align-items: center; justify-content:left; gap: 10px;
+  width: 100%;  height: 48px;
+  border: 0; border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  /* padding: 0 14px; */
+  margin-bottom: 10px;
+}
 .vnpay-cta{
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  width:100%; height:48px;
-  border:0; cursor:pointer;
-  border-radius:12px;
   font-weight:800; color:#fff;
-  background: linear-gradient(90deg,#0b5fff,#2d64ff);
-  box-shadow: 0 6px 18px rgba(11,95,255,0.22);
+  /* background: linear-gradient(90deg,#0b5fff,#2d64ff); */
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(131, 133, 136, 0.22);
   transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
 }
 
 .vnpay-cta:hover:not(:disabled){
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(11,95,255,0.28);
+  box-shadow: 0 8px 20px rgba(131, 133, 136, 0.22);
 }
 .vnpay-cta:active:not(:disabled){
   transform: translateY(0);
-  box-shadow: 0 4px 14px rgba(11,95,255,0.22);
+  box-shadow: 0 4px 14px rgba(131, 133, 136, 0.22);
 }
 .vnpay-cta:disabled{
   opacity:.7; cursor:not-allowed;
 }
 
 .vnpay-mark{
-  height:32px;
+  width: 40px;
   background:#ffffff; border-radius:8px;
   padding:3px 6px;
 }
 
 /* chữ trong nút */
-.vnpay-text-cta{ font-size:15px; line-height:1; }
+.vnpay-text-cta{ font-size:16px; line-height:1; color: #0489c2; }
 
 /* spinner nhỏ khi submitting */
 .spinner{
@@ -66,5 +71,49 @@
   border-top-color:#fff;
   animation: spin .8s linear infinite;
 }
+
+
+/* ZaloPay Button */
+.zalopay-cta { 
+  font-weight:800; color:#fff;
+  background: linear-gradient(90deg,#0ea5e9,#0c94d1);
+  box-shadow: 0 6px 18px rgba(11,95,255,0.22);
+  transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.zalopay-cta:disabled { opacity: .7; cursor: not-allowed; }
+.zalopay-cta:hover:not(:disabled){
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(11,95,255,0.22);
+}
+.zalopay-cta:active:not(:disabled){
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(11,95,255,0.22);
+}
+.zalopay-mark {
+  width: 40px;
+  border-radius:8px;
+  padding:3px 6px;
+}
+.zalopay-text-cta{
+  font-size:16px; line-height:1; color: #fff;
+}
+
+.paypal-cta { 
+  font-weight:800; color:#fff;
+  background: #ffc439; 
+  /* color: #111827;  */
+  box-shadow: 0 6px 18px rgba(11,95,255,0.22);
+  transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.paypal-cta:disabled { opacity: .7; cursor: not-allowed; }
+.paypal-mark {
+  width: 40px;
+  border-radius:8px;
+  padding:3px 6px;
+}
+.paypal-text-cta{
+  font-size:16px; line-height:1; color: #fff;
+}
+
 @keyframes spin{ to { transform: rotate(360deg); } }
 
