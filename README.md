@@ -68,6 +68,9 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
     DATABASE_PASSWORD=123456
     DATABASE_NAME=booking_db
     PORT=3000
+
+    BACKEND_URL=http://localhost:3000
+    FRONTEND_URL=http://localhost:3001
     
     # JWT Config
     JWT_ACCESS_SECRET="X7+HdDTQjSdnyGc2ALiumB7tVD6+g+eWcefZ4blz9BQ="
@@ -96,8 +99,37 @@ This is my solution to the Antoree tech test: an English tutoring marketplace pr
     GOOGLE_CLIENT_ID=
     GOOGLE_CLIENT_SECRET=
     GOOGLE_CALLBACK_URL=
+
+
+    # VNPAY sandbox
+    VNP_TMN_CODE=
+    VNP_HASH_SECRET=
+    VNP_PAYMENT_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    VNP_RETURN_URL=http://localhost:3000/payments/vnpay/return-dev
+    VNP_IPN_URL=http://localhost:3000/payments/vnpay/ipn             
     
-    FRONTEND_URL=http://localhost:3001
+    
+    # ZALOPAY (Sandbox)
+    ZLP_APP_ID=553
+    ZLP_KEY1=9phuAOYhan4urywHTh0ndEXiV3pKHr5Q
+    ZLP_KEY2=eG4r0GcoNtRGbO8         
+    ZLP_CREATE_ORDER_URL=https://sandbox.zalopay.com.vn/v001/tpe/createorder
+    # Người dùng quay về sau thanh toán (có thể dùng FE)
+    ZLP_RETURN_URL=http://localhost:3001/checkout/result
+    # IPN (public). Test local dùng ngrok để public endpoint này
+    ZLP_CALLBACK_URL=http://localhost:3000/payments/zalopay/callback
+    
+    # Paypal (Sandbox)
+    # PayPal
+    PAYPAL_CLIENT_ID=
+    PAYPAL_CLIENT_SECRET=
+    PAYPAL_ENV=sandbox
+    PAYPAL_CURRENCY=USD
+    # Nếu giá của bạn đang là VND, tạm convert sang USD để test (tùy bạn set)
+    PAYPAL_VND_USD=24000
+    PAYPAL_RETURN_URL=http://localhost:3000/payments/paypal/return-dev
+    PAYPAL_CANCEL_URL=http://localhost:3000/payments/paypal/cancel-dev
+   
     ```
 
 4. Run the backend server (default port 3000):
@@ -161,3 +193,9 @@ You can access the frontend at [http://localhost:3001](http://localhost:3001) fo
 ![Gmail Lock Notification](./background/gmaillockaccount.png)
 ## Order
 ![Order](./background/order.png)
+## Checkout/ Payment
+![Checkout](./background/checkout (1).png)
+![vnpay](./background/vnpay.png)
+![zalopay.png](./background/zalopay.png)
+![paypal](./background/paypal.png)
+![paymentresult](./background/paymentresult.png)
