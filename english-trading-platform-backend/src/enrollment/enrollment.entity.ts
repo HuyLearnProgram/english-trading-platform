@@ -1,6 +1,7 @@
 // src/enrollment/enrollment.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Teacher } from '../teacher/teacher.entity';
+import { PaymentMethod } from 'src/common/types/payment';
 
 export type OrderStatus = 'paid' | 'refunded' | 'cancelled' | 'pending';
 
@@ -18,6 +19,17 @@ export class Enrollment {
 
   // Trạng thái đơn
   @Column({ type: 'varchar' }) status: OrderStatus;
+
+
+  // === thông tin thanh toán ===
+  @Column({ type: 'varchar', default: 'unknown' })
+  paymentMethod: PaymentMethod;             // ví dụ: 'vnpay', 'stripe', 'cod' …
+
+  @Column({ type: 'varchar', nullable: true })
+  paymentRef?: string;                      // mã giao dịch từ cổng (VD: vnp_TransactionNo)
+
+  @Column({ type: 'json', nullable: true })
+  paymentMeta?: Record<string, any>;        // bankCode, cardType, payDate, v.v…
 
   // ---- Thông tin gói & snapshot giá tại thời điểm mua ----
   @Column({ type: 'int' })    planHours: number;                 // gói đã chọn (30/36/60/...)
