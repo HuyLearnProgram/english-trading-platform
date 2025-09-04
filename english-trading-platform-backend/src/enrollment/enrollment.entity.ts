@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Teacher } from '../teacher/teacher.entity';
 import { PaymentMethod } from 'src/common/types/payment';
+import { Student } from 'src/student/student.entity';
 
 export type OrderStatus = 'paid' | 'refunded' | 'cancelled' | 'pending';
 
@@ -16,6 +17,10 @@ export class Enrollment {
   @ManyToOne(() => Teacher, t => t.enrollments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'teacherId' })
   teacher: Teacher;
+
+  @ManyToOne(() => Student, s => s.enrollments)
+  @JoinColumn({ name: 'studentId' })
+  student?: Student;
 
   // Trạng thái đơn
   @Column({ type: 'varchar' }) status: OrderStatus;

@@ -1,0 +1,22 @@
+/* src/styles/checkout/PaymentResult.css */
+.result-wrap{max-width:720px;margin:60px auto;padding:0 16px}
+.result-card{border:1px solid #e5e7eb;border-radius:16px;padding:24px;background:#fff;text-align:center;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.result-card.ok{border-color:#d1fae5;background:#f0fdf4}
+.result-card.fail{border-color:#fee2e2;background:#fef2f2}
+.result-icon{width:72px;height:72px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;background:#e2e8f0}
+.result-card.ok .result-icon{background:#bbf7d0}
+.result-card.fail .result-icon{background:#fecaca}
+.result-icon svg{width:40px;height:40px;fill:#0f172a}
+.result-card.ok .result-icon svg{fill:#166534}
+.result-card.fail .result-icon svg{fill:#991b1b}
+.spinner{width:32px;height:32px;border:3px solid rgba(0,0,0,.15);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.title{margin:6px 0 4px;font-size:22px;font-weight:800;color:#0f172a}
+.subtitle{margin:0 0 8px;color:#334155}
+.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px auto 0;max-width:520px}
+.details-grid > div{background:#fff;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;text-align:left}
+.details-grid .muted{display:block;color:#64748b;font-size:12px;margin-bottom:2px}
+.actions{margin-top:16px;display:flex;gap:10px;justify-content:center}
+.btn-primary{height:40px;padding:0 16px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
+.btn-primary:disabled{opacity:.7;cursor:not-allowed}
+.btn-outline{height:40px;padding:0 16px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer}

@@ -23,6 +23,8 @@ import { NotificationModule } from './notification/notification.module';
 import { MailModule } from './mail/mail.module';
 import { PricingModule } from './pricing/pricing.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ScheduleModule } from './student/schedule.module';
+import { StudentModule } from './student/student.module';
 
 @Module({
   imports: [
@@ -36,9 +38,17 @@ import { PaymentsModule } from './payments/payments.module';
         options: {
           host: cs.get('REDIS_HOST'),
           port: Number(cs.get('REDIS_PORT')),
-          username: cs.get('REDIS_USERNAME') || undefined,
           password: cs.get('REDIS_PASSWORD') || undefined,
-          tls: cs.get('REDIS_TLS') === 'true' ? {} : undefined,
+          family: 4,                         // ép IPv4, tránh rắc rối IPv6
+          lazyConnect: true,
+          enableReadyCheck: true,
+          maxRetriesPerRequest: null,       // tránh lỗi ở các lệnh subscribe/stream dài
+          reconnectOnError: (err) => {      // reconnect khi READONLY, MOVED, v.v.
+            const msg = err?.message || '';
+            return /READONLY|ETIMEDOUT|ECONNRESET/.test(msg);
+          },
+          connectTimeout: 10_000,
+          retryStrategy: (times) => Math.min(times * 200, 2000),
         },
       }),
       inject: [ConfigService],
@@ -76,6 +86,8 @@ import { PaymentsModule } from './payments/payments.module';
     MailModule,
     PricingModule,
     PaymentsModule,
+    ScheduleModule,
+    StudentModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, BadRequestException, Res, Redirect } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, BadRequestException, Res, Redirect, Param, ParseIntPipe } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { getClientIp } from './utils/vnpay.util';
 import { OnlineProvider } from 'src/common/types/payment';
@@ -31,9 +31,9 @@ export class PaymentsController {
         return this.svc.createZaloPayCheckout(enrollmentId);
       case 'paypal':
         return this.svc.createPaypalCheckout(enrollmentId);
-      // case 'stripe':
-      //   return this.svc.createStripeCheckout(enrollmentId); // khi bạn thêm Stripe
-
+      case 'momo':
+        return this.svc.createMomoCheckout(enrollmentId);
+      
       default:
         throw new BadRequestException('Unsupported provider');
     }
@@ -111,5 +111,32 @@ export class PaymentsController {
     // Cancel thì không capture; chỉ quay lại FE và báo fail
     const url = await this.svc.buildFrontendResultRedirect(false, Number(query?.orderId || 0), 'canceled', 'paypal');
     return { url };
+  }
+
+    /** ----- MOMO ----- */
+
+  // IPN (POST) — khi có public URL
+  @Post('momo/ipn')
+  async momoIpn(@Body() body: any) {
+    return this.svc.handleMomoIpn(body);
+  }
+
+  // DEV Return: MoMo redirect → BE xác nhận → 302 về FE
+  @Get('momo/return-dev')
+  @Redirect(undefined, 302)
+  async momoReturnDev(@Query() query: any) {
+    const r = await this.svc.confirmMomoByReturn(query);
+    const url = await this.svc.buildFrontendResultRedirect(
+      !!r?.ok,
+      r?.orderId,
+      String(query?.resultCode || ''),
+      'momo'
+    );
+    return { url };
+  }
+
+  @Post(':id/send-invoice')
+  async sendInvoice(@Param('id', ParseIntPipe) id: number) {
+    return this.svc.sendInvoiceForEnrollment(id);
   }
 }

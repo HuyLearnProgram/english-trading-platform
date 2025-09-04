@@ -1,8 +1,10 @@
 // src/pages/checkout/PaymentResult.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { apiGetEnrollment } from '@apis/enrollment';
+import { apiSendEnrollmentInvoice } from '@apis/payments';
+import '@styles/checkout/PaymentResult.css';
 
 const VNP_MESSAGES = {
   '00': 'Giao dịch thành công.',
@@ -19,17 +21,10 @@ const VNP_MESSAGES = {
   '79': 'Giao dịch bị từ chối.',
 };
 
-// Thông điệp chung theo provider
 function explain(provider, code) {
   switch ((provider || '').toLowerCase()) {
     case 'vnpay':
       return code && VNP_MESSAGES[code] ? `: ${VNP_MESSAGES[code]}` : '';
-    case 'zalopay':
-      // ZaloPay thường trả status/code khác nhau; bạn có thể map thêm khi cần
-      return code ? ` (ZaloPay: ${code})` : '';
-    case 'paypal':
-      // PayPal thường trả COMPLETED/CANCELED...
-      return code ? ` (PayPal: ${code})` : '';
     default:
       return code ? ` (${code})` : '';
   }
@@ -39,30 +34,62 @@ export default function PaymentResult() {
   const [sp] = useSearchParams();
   const nav = useNavigate();
 
-  const result   = sp.get('result');    // 'success' | 'fail'
-  const provider = (sp.get('provider') || '').toLowerCase(); // 'vnpay' | 'zalopay' | 'paypal' ...
+  const result   = sp.get('result');                        // 'success' | 'fail'
+  const provider = (sp.get('provider') || '').toLowerCase();// 'vnpay' | 'momo' | ...
   const orderId  = Number(sp.get('orderId') || sp.get('vnp_TxnRef'));
   const code     = sp.get('code') || sp.get('vnp_ResponseCode') || sp.get('status');
 
   const [msg, setMsg] = useState('Đang xác minh thanh toán…');
+  const [sending, setSending] = useState(false);
+  const [sentInfo, setSentInfo] = useState(null);
+  const [sendErr, setSendErr] = useState('');
 
+  const success = useMemo(() => result === 'success', [result]);
+
+  const sendInvoice = useCallback(async (id) => {
+    setSendErr('');
+    setSending(true);
+    try {
+      const { data } = await apiSendEnrollmentInvoice(id);
+      if (data?.ok) {
+        setSentInfo(data);
+        toast.success(`Đã gửi hóa đơn ${data.invoiceNo}${data.to ? ` tới ${data.to}` : ''}`);
+        setMsg('Hóa đơn đã được gửi qua email. Đang trở về trang chủ…');
+        setTimeout(() => nav('/', { replace: true }), 1600);
+      } else {
+        setSendErr('Không gửi được hóa đơn.');
+        setMsg('Thanh toán thành công, nhưng gửi hóa đơn thất bại. Vui lòng thử lại.');
+      }
+    } catch (e) {
+      setSendErr(e?.response?.data?.message || 'Gửi hóa đơn thất bại.');
+      setMsg('Thanh toán thành công, nhưng gửi hóa đơn thất bại. Bạn có thể thử gửi lại.');
+    } finally {
+      setSending(false);
+    }
+  }, [nav]);
+
+  // Nhánh có ?result=
   useEffect(() => {
     if (!result) return;
 
-    if (result === 'success') {
+    if (success) {
       toast.success('Thanh toán thành công!');
-      setMsg('Thanh toán thành công. Đang chuyển về trang chủ…');
-      const t = setTimeout(() => nav('/', { replace: true }), 1500);
-      return () => clearTimeout(t);
+      if (orderId && !Number.isNaN(orderId)) {
+        setMsg('Đang gửi hóa đơn đến email của bạn…');
+        sendInvoice(orderId);
+      } else {
+        setMsg('Thiếu mã đơn.');
+      }
+      return;
     }
 
     // fail
     const reason = explain(provider, code);
     toast.error('Thanh toán thất bại.');
     setMsg(`Thanh toán thất bại${reason}`);
-  }, [result, code, provider, nav]);
+  }, [result, success, orderId, code, provider, sendInvoice]);
 
-  // Fallback: nếu không có ?result=..., poll trạng thái đơn như cũ
+  // Fallback: không có ?result= -> poll
   useEffect(() => {
     if (result) return;
     if (!orderId || Number.isNaN(orderId)) {
@@ -71,25 +98,23 @@ export default function PaymentResult() {
     }
 
     let intervalId = null;
-    let count = 0;
+    let stop = false;
 
     const check = async () => {
       try {
         const { data } = await apiGetEnrollment(orderId);
-        if (data?.status === 'paid') {
+        if (data?.status === 'paid' && !stop) {
           toast.success('Thanh toán thành công!');
-          nav('/', { replace: true });
+          setMsg('Đang gửi hóa đơn đến email của bạn…');
+          stop = true;
+          clearInterval(intervalId);
+          await sendInvoice(orderId);
           return;
         }
         if (['cancelled', 'refunded'].includes(data?.status)) {
           setMsg('Thanh toán không thành công hoặc đã hủy.');
           clearInterval(intervalId);
           return;
-        }
-        count += 1;
-        if (count > 30) {
-          setMsg('Chưa có xác nhận. Vui lòng kiểm tra lịch sử đơn sau ít phút.');
-          clearInterval(intervalId);
         }
       } catch {
         setMsg('Không kiểm tra được trạng thái đơn.');
@@ -101,22 +126,66 @@ export default function PaymentResult() {
     check();
     intervalId = setInterval(check, 2000);
     return () => intervalId && clearInterval(intervalId);
-  }, [result, orderId, nav]);
+  }, [result, orderId, sendInvoice]);
+
+  const isFail = !success && !!result;
 
   return (
-    <div style={{ maxWidth: 720, margin: '60px auto', textAlign: 'center' }}>
-      <h2>Kết quả thanh toán</h2>
-      <p>{msg}</p>
+    <div className="result-wrap">
+      <div className={`result-card ${success ? 'ok' : isFail ? 'fail' : ''}`}>
+        <div className="result-icon" aria-hidden>
+          {success ? (
+            <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Zm-1.1-6.3 5.657-5.657-1.414-1.415L10.9 12.586 8.86 10.546l-1.414 1.414 2.828 2.829a1 1 0 0 0 1.414 0Z"/></svg>
+          ) : isFail ? (
+            <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Zm-3.536-6.464 2.829-2.829-2.829-2.828 1.415-1.415 2.828 2.829 2.829-2.829 1.414 1.415-2.828 2.828 2.828 2.829-1.414 1.414-2.829-2.828-2.828 2.828-1.415-1.414Z"/></svg>
+          ) : (
+            <div className="spinner" />
+          )}
+        </div>
 
-      <div style={{ fontSize: 12, color: '#6b7280' }}>
-        {typeof orderId === 'number' && !Number.isNaN(orderId) ? (
-          <div>Mã đơn: #{orderId}</div>
-        ) : null}
-        {provider ? <div>Phương thức: {provider.toUpperCase()}</div> : null}
-        {code ? <div>Mã/Trạng thái: {code}</div> : null}
+        <h2 className="title">
+          {success ? 'Thanh toán thành công' : isFail ? 'Thanh toán thất bại' : 'Đang xác minh…'}
+        </h2>
+
+        <p className="subtitle">{msg}</p>
+
+        <div className="details-grid">
+          {typeof orderId === 'number' && !Number.isNaN(orderId) && (
+            <div><span className="muted">Mã đơn</span><strong>#{orderId}</strong></div>
+          )}
+          {!!provider && <div><span className="muted">Phương thức</span><strong>{provider.toUpperCase()}</strong></div>}
+          {!!code && <div><span className="muted">Mã/Trạng thái</span><strong>{code}</strong></div>}
+          {sentInfo?.to && <div><span className="muted">Gửi tới</span><strong>{sentInfo.to}</strong></div>}
+          {sentInfo?.invoiceNo && <div><span className="muted">Số hóa đơn</span><strong>{sentInfo.invoiceNo}</strong></div>}
+        </div>
+
+        <div className="actions">
+          {success ? (
+            <>
+              <button
+                className="btn-primary"
+                onClick={() => nav('/', { replace: true })}
+                disabled={sending}
+              >
+                {sending ? 'Đang gửi hóa đơn…' : 'Về trang chủ'}
+              </button>
+              {sendErr && (
+                <button
+                  className="btn-outline"
+                  onClick={() => orderId && sendInvoice(orderId)}
+                  disabled={sending}
+                >
+                  Gửi lại hóa đơn
+                </button>
+              )}
+            </>
+          ) : isFail ? (
+            <>
+              <button className="btn-outline" onClick={() => nav('/')} >Về trang chủ</button>
+            </>
+          ) : null}
+        </div>
       </div>
-
-      <button onClick={() => nav('/home')}>Về trang chủ</button>
     </div>
   );
 }

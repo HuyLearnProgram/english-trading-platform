@@ -28,3 +28,16 @@ export const apiStartPaypalCheckout = (enrollmentId) =>
     method: 'post',
     data: { enrollmentId, provider: 'paypal' },
   });
+
+export const apiStartMomoCheckout = (enrollmentId) =>
+  axiosInstance({
+    url: '/payments/checkout', 
+    method: 'post',
+    data: { enrollmentId, provider: 'momo' },
+  });
+
+export const apiSendEnrollmentInvoice = (enrollmentId) =>
+  axiosInstance({
+    url: `/payments/${enrollmentId}/send-invoice`,
+    method: 'post',
+  });

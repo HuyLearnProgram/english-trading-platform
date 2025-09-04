@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { apiGetEnrollment } from '@apis/enrollment';
-import { apiStartVnpayCheckout } from '@apis/payments';
 import '@styles/checkout/PaymentPage.css';
-import { apiStartPaypalCheckout, apiStartZaloPayCheckout } from '../../apis/payments';
+import { 
+  apiStartVnpayCheckout, apiStartPaypalCheckout, 
+  apiStartZaloPayCheckout, apiStartMomoCheckout
+} from '@apis/payments';
+
 
 export default function PaymentPage() {
   const { id } = useParams();                  // enrollmentId
@@ -70,6 +73,20 @@ export default function PaymentPage() {
       window.location.href = data.checkoutUrl;
     } catch (e) {
       setErr(e?.response?.data?.message || 'Không khởi tạo được phiên thanh toán (ZaloPay).');
+      setPaying(null);
+    }
+  };
+
+  const payWithMomo = async () => {
+    if (!en?.id || paying) return;
+    setErr('');
+    setPaying('momo');
+    try {
+      const { data } = await apiStartMomoCheckout(en.id);
+      // BE trả về { checkoutUrl } (payUrl/deeplink)
+      window.location.href = data.checkoutUrl;
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Không khởi tạo được phiên thanh toán (MoMo).');
       setPaying(null);
     }
   };
@@ -166,6 +183,25 @@ export default function PaymentPage() {
                   Thanh toán qua <strong>ZaloPay</strong>
                 </span>
                 {paying === 'zalopay' && <span className="spinner" aria-hidden="true" />}
+              </button>
+
+              {/* MoMo */}
+              <button
+                type="button"
+                className={`pay-cta momo-cta ${paying === 'momo' ? 'is-loading' : ''}`}
+                onClick={payWithMomo}
+                disabled={!!paying}
+                aria-label="Thanh toán qua MoMo"
+              >
+                <img
+                  src="https://static.momocdn.net/app/img/payment/logo.png"
+                  alt="MoMo"
+                  className="pay-mark momo-mark"
+                />
+                <span className="momo-text-cta">
+                  Thanh toán qua <strong>MoMo</strong>
+                </span>
+                {paying === 'momo' && <span className="spinner" aria-hidden="true" />}
               </button>
 
               {/* PayPal */}

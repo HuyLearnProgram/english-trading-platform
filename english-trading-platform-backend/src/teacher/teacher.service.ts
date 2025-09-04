@@ -8,7 +8,6 @@ import { Review } from 'src/review/review.entity';
 import { DAY_KEYS, DayKey, SLOT_RANGES } from './utils/availability-consts';
 import { policyFor, toHHMM, toMin, parseCSV, normalizeDays } from './utils/availability-helpers';
 import { matchAvailability } from './utils/match-availability';
-import { PACKAGE_DISCOUNTS, PACKAGE_HOURS } from '../order/utils/order-consts';
 import { PricingService } from 'src/pricing/pricing.service';
 import { TeacherSlot } from './teacher-slot.entity';
 import { TeacherSlotReservation } from './teacher-slot-reservation.entity';

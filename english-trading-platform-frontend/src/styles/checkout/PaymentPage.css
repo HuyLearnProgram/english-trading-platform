@@ -98,6 +98,33 @@
   font-size:16px; line-height:1; color: #fff;
 }
 
+/* MoMo Button */
+.momo-cta{
+  font-weight:800; color:#fff;
+  /* hồng đặc trưng MoMo */
+  background: linear-gradient(90deg,#b40169,#d81b60);
+  box-shadow: 0 6px 18px rgba(216,27,96,0.25);
+  transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.momo-cta:disabled { opacity:.7; cursor:not-allowed; }
+.momo-cta:hover:not(:disabled){
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(216,27,96,0.25);
+}
+.momo-cta:active:not(:disabled){
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(216,27,96,0.25);
+}
+.momo-mark{
+  width: 40px;
+  border-radius:8px;
+  padding:3px 6px;
+  background: transparent;
+}
+.momo-text-cta{
+  font-size:16px; line-height:1; color:#fff;
+}
+
 .paypal-cta { 
   font-weight:800; color:#fff;
   background: linear-gradient(90deg,#ffc439,#fbbd2b); 

@@ -7,12 +7,16 @@ import { CreateEnrollmentDto, UpdateEnrollmentDto, QueryEnrollmentsDto } from '.
 import { Teacher } from 'src/teacher/teacher.entity';
 import { PricingService } from 'src/pricing/pricing.service';
 import { TeachersService } from 'src/teacher/teacher.service';
+import { Student } from 'src/student/student.entity';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class EnrollmentsService {
   constructor(
     @InjectRepository(Enrollment) private readonly repo: Repository<Enrollment>,
     @InjectRepository(Teacher) private readonly teacherRepo: Repository<Teacher>,
+    @InjectRepository(Student) private readonly studentRepo: Repository<Student>,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly pricing: PricingService,
     private readonly teachersService: TeachersService, 
   ) {}
@@ -48,17 +52,35 @@ export class EnrollmentsService {
     };
   }
 
+  private async ensureStudentIdForUser(userId: number): Promise<number> {
+    if (!userId) throw new BadRequestException('Missing userId');
+
+    let st = await this.studentRepo.findOne({ where: { userId } });
+    if (st) return st.id;
+
+    const u = await this.userRepo.findOne({ where: { id: userId } });
+    // tạo hồ sơ Student tối thiểu
+    st = this.studentRepo.create({
+      userId,
+      fullName: (u as any)?.fullName || u?.email || undefined,
+    });
+    st = await this.studentRepo.save(st);
+    return st.id;
+  }
+
   /** Admin/manual create (hoặc dùng khi chưa tích hợp payment).
    *  Tạo enrollment + snapshot theo planHours. Status có thể truyền vào, default 'pending'.
    */
   async create(dto: CreateEnrollmentDto) {
+    const studentId = await this.ensureStudentIdForUser(dto.studentId);
+
     const {
       lessonLen, hourlyRate, discountPct, lessons, unit0, gross, discount, total,
     } = await this.computeSnapshot(dto.teacherId, dto.planHours);
 
     const entity = this.repo.create({
       teacherId: dto.teacherId,
-      studentId: dto.studentId, // nếu có JWT thì nên lấy từ req.user ở controller
+      studentId, // nếu có JWT thì nên lấy từ req.user ở controller
       status: dto.status ?? 'pending',
 
       planHours: dto.planHours,
@@ -78,13 +100,15 @@ export class EnrollmentsService {
 
   /** Purchase cho học sinh (snapshot + status pending). studentId lấy từ context nếu có. */
   async purchase(dto: CreateEnrollmentDto, studentIdFromCtx: number) {
+    const userId = studentIdFromCtx ?? dto.studentId; // userId từ JWT hoặc payload
+    const studentId = await this.ensureStudentIdForUser(userId);
     const {
       lessonLen, hourlyRate, discountPct, lessons, unit0, gross, discount, total,
     } = await this.computeSnapshot(dto.teacherId, dto.planHours);
 
     const en = this.repo.create({
       teacherId: dto.teacherId,
-      studentId: studentIdFromCtx ?? dto.studentId!,  // tốt nhất lấy từ auth context
+      studentId,  // tốt nhất lấy từ auth context
       status: 'pending',
 
       planHours: dto.planHours,

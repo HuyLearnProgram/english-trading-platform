@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ConflictException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +7,9 @@ import { TeachersService } from 'src/teacher/teacher.service';
 import { buildSortedQuery, formatVNDate, hmacSHA512 } from './utils/vnpay.util';
 import { postForm as zlpPostForm, buildAppTransId, hmacSHA256Hex } from './utils/zalopay.util';
 import axios from 'axios';
+import { momoRawCreateSignature, momoRawRespSignature, hmacSHA256Hex as momoHmac } from './utils/momo.util';
+import { InvoiceService } from './invoice.service';
+import { StudentScheduleService } from 'src/student/student-schedule.service';
 
 @Injectable()
 export class PaymentsService {
@@ -15,6 +18,8 @@ export class PaymentsService {
     private readonly cfg: ConfigService,
     @InjectRepository(Enrollment) private readonly enrollRepo: Repository<Enrollment>,
     private readonly teachers: TeachersService,
+    private readonly invoice: InvoiceService,
+    private readonly schedule: StudentScheduleService,
   ) {}
    /** ----- VNPAY SERVICE ----- */
   private vnp() {
@@ -201,6 +206,9 @@ export class PaymentsService {
         }
         en.status = 'paid';
         await this.enrollRepo.save(en);
+        await this.schedule.generateForEnrollment(en.id, new Date()).catch(e=>
+          this.logger.warn(`Generate schedule failed #${en.id}: ${e instanceof Error ? e.message : e}`),
+        );
       }
 
       return { ok: true, orderId, amount: paidAmt };
@@ -209,7 +217,6 @@ export class PaymentsService {
       return { ok: false, reason: 'unhandled' };
     }
   }
-
 
    /** ----- ZALOPAY SERVICE ----- */
    private zlp() {
@@ -353,6 +360,9 @@ export class PaymentsService {
         (en as any).paymentRef = query?.zptransid || (en as any).paymentRef;
         (en as any).paymentMeta = { ...(en as any).paymentMeta, apptransid, zptransid: query?.zptransid, devReturn: true };
         await this.enrollRepo.save(en);
+        await this.schedule.generateForEnrollment(en.id, new Date()).catch(e=>
+          this.logger.warn(`Generate schedule failed #${en.id}: ${e instanceof Error ? e.message : e}`),
+        );
       }
 
       const amount = Number(query?.amount || en.total);
@@ -510,6 +520,9 @@ export class PaymentsService {
         }
         en.status = 'paid';
         await this.enrollRepo.save(en);
+        await this.schedule.generateForEnrollment(en.id, new Date()).catch(e=>
+          this.logger.warn(`Generate schedule failed #${en.id}: ${e instanceof Error ? e.message : e}`),
+        );
       }
 
       return { ok: true, orderId: en.id };
@@ -519,6 +532,178 @@ export class PaymentsService {
     }
   }
 
+
+  /** ----- MOMO SERVICE ----- */
+
+  private momo() {
+    const partnerCode = this.cfg.get<string>('MOMO_PARTNER_CODE');
+    const accessKey   = this.cfg.get<string>('MOMO_ACCESS_KEY');
+    const secretKey   = this.cfg.get<string>('MOMO_SECRET_KEY');
+    const createUrl   = this.cfg.get<string>('MOMO_CREATE_URL');
+    const returnUrl   = this.cfg.get<string>('MOMO_RETURN_URL');
+    const ipnUrl      = this.cfg.get<string>('MOMO_IPN_URL');
+    if (!partnerCode || !accessKey || !secretKey || !createUrl || !returnUrl || !ipnUrl) {
+      throw new Error('Missing MoMo env config');
+    }
+    return { partnerCode, accessKey, secretKey, createUrl, returnUrl, ipnUrl };
+  }
+
+  /** Tạo MoMo Order và trả link thanh toán (payUrl/deeplink) */
+  async createMomoCheckout(enrollmentId: number) {
+    const en = await this.enrollRepo.findOne({ where: { id: enrollmentId } });
+    if (!en) throw new BadRequestException('Enrollment not found');
+    if (en.status === 'paid') throw new ConflictException('Enrollment already paid');
+
+    if (en.paymentMethod !== 'momo') {
+      en.paymentMethod = 'momo' as any;
+      await this.enrollRepo.save(en);
+    }
+
+    const { partnerCode, accessKey, secretKey, createUrl, returnUrl, ipnUrl } = this.momo();
+
+    const amount = String(Math.round(Number(en.total)));
+    // MoMo yêu cầu orderId duy nhất -> gắn timestamp giữ mapping bằng cách tách trước dấu "_"
+    const orderId   = `${en.id}_${Date.now()}`;
+    const requestId = orderId;
+    const orderInfo = `Thanh toan goi hoc #${en.id}`;
+    const requestType = 'payWithMethod';       // theo sample
+    const extraData   = '';                    // tuỳ nhu cầu
+    const autoCapture = true;
+    const lang = 'vi';
+
+    const raw = momoRawCreateSignature({
+      accessKey, amount, extraData, ipnUrl, orderId, orderInfo,
+      partnerCode, redirectUrl: returnUrl, requestId, requestType,
+    });
+    const signature = momoHmac(secretKey, raw);
+
+    const payload = {
+      partnerCode, partnerName: 'Antoree',
+      storeId: 'AntoreeStore',
+      requestId, amount, orderId, orderInfo,
+      redirectUrl: returnUrl, ipnUrl,
+      lang, requestType, autoCapture, extraData,
+      signature,
+    };
+
+    const { data } = await axios.post(createUrl, payload, {
+      headers: { 'Content-Type': 'application/json' }, timeout: 15000,
+    });
+
+    if (Number(data?.resultCode) !== 0) {
+      throw new BadRequestException(data?.message || 'MoMo create order failed');
+    }
+
+    // payUrl (web) | deeplink (app)
+    return { checkoutUrl: data.payUrl || data.deeplink, momoOrderId: orderId };
+  }
+
+  /** IPN MoMo (server->server) – dùng khi có public URL */
+  async handleMomoIpn(body: any) {
+    try {
+      const { accessKey, secretKey } = this.momo();
+
+      // xác thực chữ ký
+      const raw = momoRawRespSignature(accessKey, body || {});
+      const sign = momoHmac(secretKey, raw);
+      if (sign !== body?.signature) {
+        return { resultCode: 97, message: 'bad signature' };
+      }
+
+      const ok      = Number(body?.resultCode) === 0;
+      const amount  = Number(body?.amount || 0);
+      const idStr   = String(body?.orderId || '');
+      const orderId = Number(idStr.split('_')[0] || 0);
+
+      const en = await this.enrollRepo.findOne({ where: { id: orderId } });
+      if (!en) return { resultCode: 0, message: 'order not found' };
+
+      if (ok && en.status !== 'paid') {
+        const expect = Math.round(Number(en.total));
+        if (Math.round(amount) !== expect) return { resultCode: 0, message: 'amount mismatch' };
+
+        // giữ chỗ nếu có
+        if (Array.isArray(en.preferredSlots) && en.preferredSlots.length) {
+          try { await this.teachers.tryReserveSlots(en.teacherId, en.preferredSlots, en.id); }
+          catch (e) { this.logger.warn(`Reserve failed #${en.id}: ${e instanceof Error ? e.message : e}`); }
+        }
+
+        en.status = 'paid';
+        en.paymentMethod = 'momo' as any;
+        en.paymentRef = body?.transId || en.paymentRef;
+        en.paymentMeta = {
+          ...(en.paymentMeta || {}),
+          momoOrderId: idStr,
+          momoRequestId: body?.requestId,
+          payType: body?.payType,
+          message: body?.message,
+          resultCode: body?.resultCode,
+        };
+        await this.enrollRepo.save(en);
+      }
+
+      return { resultCode: 0, message: 'success' };
+    } catch (e) {
+      this.logger.error('MoMo IPN error', e);
+      // MoMo sẽ retry khi không trả về 0
+      return { resultCode: 0, message: 'received' };
+    }
+  }
+
+  /** DEV: xác nhận qua Return URL (localhost, không cần IPN) */
+  async confirmMomoByReturn(query: any) {
+    try {
+      const { accessKey, secretKey } = this.momo();
+
+      // verify signature nếu đủ field
+      const raw = momoRawRespSignature(accessKey, query || {});
+      const sign = momoHmac(secretKey, raw);
+      if (query?.signature && sign !== query.signature) {
+        return { ok: false, reason: 'bad-signature' };
+      }
+
+      const ok      = Number(query?.resultCode) === 0;
+      const amount  = Number(query?.amount || 0);
+      const idStr   = String(query?.orderId || '');
+      const orderId = Number(idStr.split('_')[0] || 0);
+
+      const en = await this.enrollRepo.findOne({ where: { id: orderId } });
+      if (!en) return { ok: false, reason: 'not-found', orderId };
+
+      if (!ok) return { ok: false, reason: 'gateway-declined', code: query?.resultCode, orderId };
+
+      if (en.status !== 'paid') {
+        const expect = Math.round(Number(en.total));
+        if (Math.round(amount) !== expect) return { ok: false, reason: 'amount-mismatch', orderId };
+
+        if (Array.isArray(en.preferredSlots) && en.preferredSlots.length) {
+          try { await this.teachers.tryReserveSlots(en.teacherId, en.preferredSlots, en.id); }
+          catch (e: any) { this.logger.warn(`Reserve failed #${en.id}: ${e.message}`); }
+        }
+        en.status = 'paid';
+        en.paymentMethod = 'momo' as any;
+        en.paymentRef = query?.transId || en.paymentRef;
+        en.paymentMeta = {
+          ...(en.paymentMeta || {}),
+          momoOrderId: idStr,
+          momoRequestId: query?.requestId,
+          payType: query?.payType,
+          resultCode: query?.resultCode,
+          message: query?.message,
+          devReturn: true,
+        };
+        await this.enrollRepo.save(en);
+        await this.schedule.generateForEnrollment(en.id, new Date()).catch(e=>
+          this.logger.warn(`Generate schedule failed #${en.id}: ${e instanceof Error ? e.message : e}`),
+        );
+      }
+
+      return { ok: true, orderId, amount };
+    } catch (e) {
+      this.logger.error('confirmMomoByReturn error', e);
+      return { ok: false, reason: 'unhandled' };
+    }
+  }
   // (optional) Nếu muốn Return URL trỏ thẳng về BE rồi BE 302 về FE:
   async buildFrontendResultRedirect(ok: boolean, orderId?: number, code?: string, provider?: string) {
     const fe = this.cfg.get<string>('FRONTEND_URL') || 'http://localhost:3001';
@@ -528,5 +713,17 @@ export class PaymentsService {
     if (code) url.searchParams.set('code', code);
     if (provider) url.searchParams.set('provider', provider);
     return url.toString();
+  }
+  
+  /** Gửi hóa đơn cho đơn đã thanh toán (idempotent ở tầng email provider) */
+  async sendInvoiceForEnrollment(enrollmentId: number) {
+    const en = await this.enrollRepo.findOne({ where: { id: enrollmentId } });
+    if (!en) throw new NotFoundException('Enrollment not found');
+
+    if (en.status !== 'paid') {
+      throw new BadRequestException('Order has not been paid');
+    }
+    // trả về info để FE hiển thị (email, mã hóa đơn, có/không file đính kèm)
+    return this.invoice.sendEnrollmentInvoice(enrollmentId);
   }
 }
