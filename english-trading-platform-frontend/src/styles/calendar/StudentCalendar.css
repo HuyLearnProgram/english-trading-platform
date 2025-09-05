@@ -178,3 +178,12 @@
 .cal-popover-teacher .name{
   font-weight:700;
 }
+
+
+.cal-footer{
+  margin-top:16px; color:#475569; font-size:14px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  flex-wrap:wrap;
+}
+.cal-footer-actions { display:flex; align-items:center; gap:10px; }
+.gcal-connected { color:#059669; }

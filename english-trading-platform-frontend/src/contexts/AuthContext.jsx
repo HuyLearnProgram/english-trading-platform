@@ -1,12 +1,8 @@
 import React, { createContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance, { applyAccessToken } from '@utils/axios';
 
 export const AuthContext = createContext();
 
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  withCredentials: true,
-});
 
 function parseJwt(token) {
   try { return JSON.parse(atob(token.split('.')[1])); } catch { return null; }
@@ -21,31 +17,32 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [initializing, setInitializing] = useState(true);
 
-  const applyAccessToken = useCallback((accessToken) => {
+  // 
+  
+  const markSession = (on) => on ? localStorage.setItem(HAS_SESSION, '1') : localStorage.removeItem(HAS_SESSION);
+  const hasSession = () => localStorage.getItem(HAS_SESSION) === '1';
+
+  const setTokenAndUser = useCallback((accessToken) => {
     if (!accessToken) {
-      delete api.defaults.headers.common.Authorization;
+      applyAccessToken(null);
       setUser(null); setRole(null);
-      localStorage.removeItem(ACCESS_TOKEN);
       localStorage.removeItem(USER_SNAPSHOT);
       return;
     }
-    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+    applyAccessToken(accessToken);
     const p = parseJwt(accessToken);
-    if (p) { 
-      setUser({ id: p.sub, email: p.email }); 
-      setRole(p.role); 
+    if (p) {
+      const u = { id: p.sub, email: p.email, role: p.role };
+      setUser(u); setRole(u.role);
       localStorage.setItem(ACCESS_TOKEN, accessToken);
-      localStorage.setItem(
-        USER_SNAPSHOT,
-        JSON.stringify({ id: p.sub, email: p.email, role: p.role })
-      );
+      localStorage.setItem(USER_SNAPSHOT, JSON.stringify(u));
     }
   }, []);
 
   // Hàm lấy hồ sơ hiện tại
   const fetchMe = useCallback(async () => {
     try {
-      const { data } = await api.get('/auth/me');
+      const { data } = await axiosInstance.get('/auth/me');
       setUser({ id: data.id, email: data.email, role: data.role, avatarUrl: data.avatarUrl });
       setRole(data.role);
     } catch {}
@@ -53,19 +50,10 @@ export const AuthProvider = ({ children }) => {
 
   // ---- Interceptor: auto refresh 1 lần, KHÔNG cho chính /auth/refresh
   const refreshPromiseRef = useRef(null);
-  const hasSession = () => localStorage.getItem(HAS_SESSION) === '1';
-  const markSession = (on) => on ? localStorage.setItem(HAS_SESSION, '1') : localStorage.removeItem(HAS_SESSION);
 
-  const acceptExternalToken = useCallback(async (token) => {
-    // Google callback đưa access token qua URL
-    applyAccessToken(token);
-    // Quan trọng: phiên Google cũng đã được BE set cookie rt -> đánh dấu có phiên
-    markSession(true);
-    await fetchMe(); // lấy avatarUrl/role sau Google callback
-  }, [applyAccessToken, fetchMe]);
 
   useEffect(() => {
-    const interceptor = api.interceptors.response.use(
+    const interceptor = axiosInstance.interceptors.response.use(
       (res) => res,
       async (error) => {
         const original = error.config;
@@ -87,35 +75,24 @@ export const AuthProvider = ({ children }) => {
 
         original._retry = true;
         try {
-          if (!refreshPromiseRef.current) {
-            refreshPromiseRef.current = api.post('/auth/refresh');
-          }
-
-          const { data } = await refreshPromiseRef.current.finally(() => {
-            refreshPromiseRef.current = null;
-          });
-
-          applyAccessToken(data.access_token);
+          const { data } = await axiosInstance.post('/auth/refresh');
+          setTokenAndUser(data.access_token);
           if (data.profile) {
             setUser(data.profile);
             setRole(data.profile.role);
           }
-          original.headers = {
-            ...(original.headers || {}),
-            Authorization: `Bearer ${data.access_token}`,
-          };
-          return api.request(original);
+          original.headers = { ...(original.headers || {}), Authorization: `Bearer ${data.access_token}` };
+          return axiosInstance.request(original);
         } catch (e) {
-          // Refresh thất bại -> xoá phiên cục bộ
           markSession(false);
-          applyAccessToken(null);
+          setTokenAndUser(null);
           return Promise.reject(e);
         }
       }
     );
 
-    return () => api.interceptors.response.eject(interceptor);
-  }, [applyAccessToken]);
+    return () => axiosInstance.interceptors.response.eject(interceptor);
+  }, [setTokenAndUser]);
 
   // Khởi động app: thử refresh 1 lần (nếu chưa có cookie sẽ nhận 401 và dừng)
   useEffect(() => {
@@ -135,64 +112,69 @@ export const AuthProvider = ({ children }) => {
 
         // 2) Sau đó thử refresh nếu có phiên RT cookie
         if (hasSession()) {
-          const { data } = await api.post('/auth/refresh');
-          applyAccessToken(data.access_token);
+          const { data } = await axiosInstance.post('/auth/refresh');
+          setTokenAndUser(data.access_token);
           if (data.profile) {
             setUser(data.profile);
             setRole(data.profile.role);
             localStorage.setItem(USER_SNAPSHOT, JSON.stringify(data.profile));
           } else {
-            await fetchMe(); // fallback
-          } 
+            await fetchMe();
+          }
         }
       } finally {
         setInitializing(false);
       }
     })();
-  }, [applyAccessToken, fetchMe]);
+  }, [setTokenAndUser, fetchMe]);
 
   const login = useCallback(async (emailOrPhone, password) => {
-    const { data } = await api.post('/auth/login', { email: emailOrPhone, password });
-    applyAccessToken(data.access_token);
-    if (data.id) setUser({ id: data.id, email: data.email, role: data.role, avatarUrl: data.avatarUrl });
+    const { data } = await axiosInstance.post('/auth/login', { email: emailOrPhone, password });
+    setTokenAndUser(data.access_token);
     setRole(data.role);
     markSession(true); // đã có cookie rt từ BE
     // lưu snapshot rõ ràng hơn (nếu cần)
     localStorage.setItem(USER_SNAPSHOT, JSON.stringify({ id: data.id, email: data.email, role: data.role, avatarUrl: data.avatarUrl }));
-  }, [applyAccessToken]);
+  }, [setTokenAndUser]);
 
   const register = useCallback(
     async (email, password, r) => {
-      await api.post('/auth/register', { email, password, role: r });
+      await axiosInstance.post('/auth/register', { email, password, role: r });
       await login(email, password);
     },[login]
   );
 
   const logout = useCallback(async () => {
-    try { await api.post('/auth/logout'); } catch {}
+    try { await axiosInstance.post('/auth/logout'); } catch {}
     markSession(false);
-    applyAccessToken(null);
-  }, [applyAccessToken]);
+    setTokenAndUser(null);
+  }, [setTokenAndUser]);
 
-  // 3) Đồng bộ đa-tab qua storage event (đăng nhập/đăng xuất ở tab A → tab B cập nhật ngay)
+  const acceptExternalToken = useCallback(async (token) => {
+    setTokenAndUser(token);
+    markSession(true);
+    await fetchMe();
+  }, [setTokenAndUser, fetchMe]);
+
+  // 3) Đồng bộ đa-tab
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === ACCESS_TOKEN) {
-        // e.newValue null => logout, ngược lại => login
-        applyAccessToken(e.newValue);
+        // e.newValue: null => logout; khác null => login
+        setTokenAndUser(e.newValue || null);
         if (!e.newValue) { setUser(null); setRole(null); }
       }
       if (e.key === USER_SNAPSHOT && e.newValue) {
         try { const u = JSON.parse(e.newValue); setUser(u); setRole(u.role); } catch {}
       }
       if (e.key === HAS_SESSION && e.newValue !== '1') {
-        // phiên RT bị xoá ở tab khác
-        applyAccessToken(null);
+        // phiên RT bị xóa ở tab khác
+        setTokenAndUser(null);
       }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, [applyAccessToken]);
+  }, [setTokenAndUser]);
 
   const value = useMemo(
     () => ({ user, role, initializing, login, register, logout, acceptExternalToken  }),

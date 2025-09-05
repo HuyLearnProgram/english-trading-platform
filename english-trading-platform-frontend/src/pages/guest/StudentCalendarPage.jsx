@@ -4,6 +4,8 @@ import { AuthContext } from '@contexts/AuthContext';
 import { apiGetStudentCalendarByUser } from '@apis/students';
 import '@styles/calendar/StudentCalendar.css';
 import { avatarUrlPlaceholder } from '@utils/constants';
+import { apiGcalStatus, apiGcalAuthUrl, apiGcalSync } from '@apis/googleCalendar';
+
 
 /** ====== Utils ngày tháng ====== */
 const VN_DOW = ['CN','T2','T3','T4','T5','T6','T7']; // Sunday-first
@@ -153,6 +155,62 @@ const StudentCalendarPage = () => {
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
   const [popover, setPopover] = useState(null); // {anchorEl, event}
+
+  // Google Calendar Sync
+  const [gcal, setGcal] = useState({ connected:false, email:null });
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await apiGcalStatus();
+        setGcal(data);
+      } catch {}
+    })();
+  }, []);
+
+  // popup connect
+  const connectGcal = async () => {
+    const { data } = await apiGcalAuthUrl();
+    const w = window.open(
+      data.url,
+      'gcal-auth',
+      'width=520,height=640,menubar=no,toolbar=no'
+    );
+    const onMsg = async  (e) => {
+      if (e?.data?.source === 'google-calendar' && e.data.success) {
+        window.removeEventListener('message', onMsg);
+        try {
+          const { data } = await apiGcalStatus();
+          setGcal(data); // { connected:true, email: ... }
+        } catch {
+          setGcal((s) => ({ ...s, connected: true }));
+        }
+      }
+    };
+    window.addEventListener('message', onMsg);
+  };
+
+  // sync
+  const syncNow = async () => {
+    try {
+      setSyncing(true);
+      const { data } = await apiGcalSync();
+      alert(`Đã đồng bộ Google Calendar: tạo mới ${data.created}, cập nhật ${data.updated}`);
+    } catch (e) {
+      // axiosInstance trả về {status, message, data}
+      console.error('GCal sync error:', e);
+      const msg =
+        e?.message ||
+        e?.data?.message ||
+        (typeof e === 'string' ? e : null) ||
+        'Đồng bộ thất bại';
+      alert(msg);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
 
   useEffect(() => {
     let alive = true;
@@ -318,11 +376,28 @@ const StudentCalendarPage = () => {
 
       {!loading && !error && (
         <div className="cal-footer">
-          <span>Timezone: <b>{studentTz}</b></span>
-          {!!summary.totalLessons && <span> · Tổng buổi (tất cả khóa): <b>{summary.totalLessons}</b></span>}
-          {summary.startMin && summary.endMax && (
-            <span> · Từ <b>{summary.startMin}</b> đến <b>{summary.endMax}</b></span>
-          )}
+          <div className="cal-footer-left">
+            <span>Timezone: <b>{studentTz}</b></span>
+            {!!summary.totalLessons && <span> · Tổng buổi (tất cả khóa): <b>{summary.totalLessons}</b></span>}
+            {summary.startMin && summary.endMax && (
+              <span> · Từ <b>{summary.startMin}</b> đến <b>{summary.endMax}</b></span>
+            )}
+          </div>
+
+          <div className="cal-footer-actions">
+            {!gcal.connected ? (
+              <button className="cal-btn primary" onClick={connectGcal}>
+                Kết nối Google Calendar
+              </button>
+            ) : (
+              <>
+                <span className="gcal-connected">Đã kết nối: <b>{gcal.email || 'Google'}</b></span>
+                <button className="cal-btn primary" disabled={syncing} onClick={syncNow}>
+                  {syncing ? 'Đang đồng bộ…' : 'Đồng bộ với Google Calendar'}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

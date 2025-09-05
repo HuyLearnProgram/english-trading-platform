@@ -7,20 +7,31 @@ const API_BASE =
 
 const axiosInstance = axios.create({
   baseURL: API_BASE,
+  withCredentials: true,
   timeout: 15000, // 15s
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
-
+const ACCESS_TOKEN_KEY = 'accessToken';
 /** Helper: lấy/ghi token */
 export const getAccessToken = () =>
-  localStorage.getItem("access_token") || localStorage.getItem("token");
+  localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem("access_token") || localStorage.getItem("token");
 
 export const setAccessToken = (token) => {
-  if (token) localStorage.setItem("access_token", token);
-  else localStorage.removeItem("access_token");
+  if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  else localStorage.removeItem(ACCESS_TOKEN_KEY);
+};
+
+export const applyAccessToken = (token) => {
+  if (token) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    delete axiosInstance.defaults.headers.common.Authorization;
+  }
 };
 
 /** REQUEST interceptor: tự gắn Authorization nếu có token */
@@ -47,10 +58,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     // Không có response -> lỗi mạng / CORS
     if (!error.response) {
-      return Promise.reject({
-        message: "Network error or CORS blocked",
-        _original: error,
-      });
+      if (error.code === 'ECONNABORTED') {
+        return Promise.reject({ message: 'Request timeout', code: 'TIMEOUT', _original: error });
+      }
+      return Promise.reject({ message: 'Network error or CORS blocked', _original: error });
     }
 
     const { status, data } = error.response;
