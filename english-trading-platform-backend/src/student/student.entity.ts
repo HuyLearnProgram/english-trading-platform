@@ -27,17 +27,12 @@ export class Student {
   /** Múi giờ học của HS (rất quan trọng để render calendar và đồng bộ Google Calendar) */
   @Column({ nullable: true }) timezone?: string;  // ví dụ: 'Asia/Ho_Chi_Minh'
 
-  // thông tin phụ huynh (nếu là học sinh nhỏ tuổi)
-  @Column({ nullable: true }) parentName?: string;
-  @Column({ nullable: true }) parentPhone?: string;
-  @Column({ nullable: true }) parentEmail?: string;
 
   // mục tiêu/level
   @Column({ nullable: true }) level?: string;                      // Beginner/Intermediate/Advanced
   @Column({ type: 'text', nullable: true }) goals?: string;
 
   // lịch học & ưu tiên lịch
-  @Column({ type: 'json', nullable: true }) weeklyAvailability?: any; // cùng format với teacher
   @Column({ type: 'json', nullable: true }) preferredSlots?: string[]; // ['mon 10:00-11:00', ...]
 
   /** Lịch học đã phát sinh theo từng đơn */

@@ -5,11 +5,15 @@ import { Student } from './student.entity';
 import { Enrollment } from 'src/enrollment/enrollment.entity';
 import { StudentController } from './student.controller';
 import { ScheduleModule } from './schedule.module';
+import { StudentService } from './student.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student, Enrollment]), ScheduleModule],
+  imports: [
+    TypeOrmModule.forFeature([Student, Enrollment]), 
+    ScheduleModule
+  ],
   controllers: [StudentController],
-  providers: [],
-  exports: [],
+  providers: [StudentService],
+  exports: [StudentService],
 })
 export class StudentModule {}
