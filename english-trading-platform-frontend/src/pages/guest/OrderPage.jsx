@@ -1,19 +1,22 @@
 // src/pages/guest/OrderPage.jsx
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import '@styles/order/OrderPage.css';
-import { apiGetTeacherOrderOptions } from '@apis/teacher';
-import { apiPurchaseEnrollment } from '@apis/enrollment';
+import { toast } from 'react-toastify';
+
 import { AuthContext } from '@contexts/AuthContext';
+import { apiGetTeacherOrderOptions } from '@apis/teacher';
+import { apiCheckStudentSlots } from '@apis/students';
+import { apiPurchaseEnrollment } from '@apis/enrollment';
 import { formatWeeks } from '@utils/constants';
 
-// Components (mới tách)
 import TeacherHeaderOrder from '@components/order/TeacherHeaderOrder';
 import LessonsPerWeekSelector from '@components/order/LessonsPerWeekSelector';
 import SlotSection from '@components/order/SlotSection';
 import PackageGrid from '@components/order/PackageGrid';
 import TimeEstimateBox from '@components/order/TimeEstimateBox';
 import PriceSummaryBox from '@components/order/PriceSummaryBox';
+import '@styles/order/OrderPage.css';
+
 
 export default function OrderPage() {
   const navigate = useNavigate();
@@ -88,6 +91,26 @@ export default function OrderPage() {
       return;
     }
     if (!canSubmit) return;
+
+    // 1) Check trùng lịch trước khi tạo đơn
+    try {
+      const { data: check } = await apiCheckStudentSlots(user.id, picked); // truyền user.id (BE fallback qua userId)
+      if (check?.hasConflict) {
+        const names = {0:'Thứ 2',1:'Thứ 3',2:'Thứ 4',3:'Thứ 5',4:'Thứ 6',5:'Thứ 7',6:'Chủ nhật'};
+        const lines = (check.conflicts || []).map(
+          (c) => `• ${c.input.replace(/^([a-z]{3})\s/i, (_,d)=>{
+                  const w = {mon:0,tue:1,wed:2,thu:3,fri:4,sat:5,sun:6}[d] ?? d;
+                  return (typeof w==='number'?`${names[w]} `:`${d} `);
+                })}`
+        );
+        toast.error(`Bạn đã có lịch học trùng thời gian:\n${lines.join('\n')}`, { autoClose: 6000 });
+        return; // ❌ dừng — không tạo đơn
+      }
+    } catch (e) {
+      // Nếu bạn muốn "fail closed": coi như có rủi ro => không cho tạo đơn
+      toast.error('Không kiểm tra được xung đột lịch. Vui lòng thử lại.');
+      return;
+    }
 
     setSubmitting(true);
     try {
