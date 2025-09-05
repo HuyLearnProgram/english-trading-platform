@@ -173,3 +173,5 @@ export const toMin = (hhmm) => {
   return h*60 + m;
 };
 export const toHHMM = (m) => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+
+export const avatarUrlPlaceholder = "https://cdn-icons-png.flaticon.com/512/3541/3541871.png";

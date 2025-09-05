@@ -106,7 +106,7 @@ const UserMenu = ({ user: userProp, onLogout }) => {
             <span className="umi-icon">⚙️</span> Account settings
           </button>
 
-          <button className="user-menu-item" role="menuitem" onClick={() => go('/calendar')}>
+          <button className="user-menu-item" role="menuitem" onClick={() => go(`/calendar/${user?.id}`)}>
             <span className="umi-icon">📅</span> Calendar
           </button>
 

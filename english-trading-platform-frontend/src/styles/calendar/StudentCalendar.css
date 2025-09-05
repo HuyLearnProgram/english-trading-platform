@@ -1,0 +1,180 @@
+.cal-page{
+  max-width: 1296px;
+  margin: 24px auto;         /* căn giữa */
+  min-height:78vh;
+  background:#fff;
+  padding:32px;
+  border-radius:10px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  color:#121212;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Toolbar */
+.cal-toolbar{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px;
+}
+.cal-title{
+  font-size:28px; font-weight:800; color:#111827; text-transform:capitalize;
+}
+.cal-actions{ display:flex; gap:8px; align-items:center; }
+.cal-icon-btn{
+  border:none; background:transparent; cursor:pointer;
+  width:36px; height:36px; border-radius:8px; font-size:18px;
+}
+.cal-icon-btn:hover{ background:#f3f4f6; }
+.cal-btn{
+  height:36px; padding:0 12px; border-radius:8px; border:1px solid #d1d5db; cursor:pointer; font-weight:600;
+  background:#fff;
+}
+.cal-btn.ghost{ background:#fff; color:#111827; }
+.cal-btn.primary{ background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
+.cal-btn.ghost:hover{ background:#f9fafb; }
+.cal-btn.primary:hover{ filter:brightness(0.95); }
+
+/* Headings row (days of week) */
+.cal-dow-row{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin:12px 0 8px 0;
+}
+.cal-dow-cell{
+  padding:6px; text-align:center; color:#6b7280; text-transform:uppercase; font-size:13px; font-weight:500;
+}
+:root { --cal-cell-h: 120px; }
+/* Grid */
+.cal-grid-wrapper{ width:100%; margin: 0 auto; } /* canh giữa */
+.cal-grid{
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* Mỗi ô ngày không đặt width cố định nữa */
+.cal-day{
+  /* bỏ: width:calc(14.2857% - 8px); */
+  min-height:var(--cal-cell-h); background:#fff; border:1px solid #eef2f7;
+  border-radius:10px; padding:6px; display:flex; flex-direction:column;
+  justify-content:flex-start; position:relative; transition:background .2s ease;
+  overflow: hidden
+}
+.cal-day:hover{ background:#fbfdff; }
+.cal-day.muted{ background:#fafafa; color:#9ca3af; }
+
+.cal-day-head{ display:flex; align-items:center; justify-content:space-between; }
+.cal-day-head small{ font-weight:700; color:inherit; }
+.cal-badge.count{
+  background:#0ea5e9; color:#fff; font-size:12px; border-radius:999px; padding:0 8px; line-height:20px; height:20px;
+}
+
+/* Events inside cell */
+.cal-day-body{ margin-top:6px; display:flex; flex-direction:column; gap:6px; }
+/* .cal-event-chip{
+  display:flex; align-items:center; gap:8px; width:100%;
+  background:#e6f3ff; border:1px solid #bfdbfe; color:#0f172a;
+  border-radius:10px; padding:6px 8px; font-size:13px; cursor:pointer; text-align:left;
+}
+.cal-event-chip .time{ font-weight:800; min-width:48px; }
+.cal-event-chip .title{ font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } */
+
+.cal-more{ font-size:12px; color:#6b7280; }
+
+/* Loading + error */
+.cal-loading, .cal-error{
+  padding:16px; border:1px dashed #cbd5e1; border-radius:8px; background:#f8fafc; color:#334155; margin-top:12px;
+}
+
+/* Footer */
+.cal-footer{ margin-top:16px; color:#475569; font-size:14px; }
+
+
+
+/* .cal-popover-title{ font-weight:800; color:#0f172a; } */
+.cal-popover-body{ padding:12px 14px; }
+.cal-popover-date{ font-weight:700; margin-bottom:6px; }
+.cal-badges{ display:flex; gap:8px; margin:6px 0 10px; flex-wrap:wrap; }
+.cal-badge.muted{ background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; padding:3px 8px; border-radius:999px; font-size:12px; }
+.cal-detail-list{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; color:#111827; }
+.cal-popover-footer{ border-top:1px solid #eef2f7; padding:10px 14px; display:flex; gap:8px; justify-content:flex-end; }
+
+/* Responsive */
+@media (max-width: 1024px){
+  .cal-day{ min-height:95px; }
+}
+@media (max-width: 768px){
+  .cal-page{ padding:16px; }
+  .cal-title{ font-size:22px; }
+  .cal-dow-cell{ font-size:12px; }
+  .cal-day{ min-height:88px; }
+}
+
+.cal-day.blank {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+}
+
+.cal-day.past {
+  background: #faf6f0;   /* nhạt hơn */
+  color: #777;
+}
+
+.cal-day.future {
+  background: #fff7ee;   /* đậm hơn một chút */
+}
+
+.cal-day.today {
+  background: #fff;      /* nổi bật */
+  outline: 2px solid #3b82f6; /* xanh để đánh dấu hôm nay */
+  outline-offset: -2px;
+}
+
+/* popover đã fixed và clamp trong JS, chỉ style cơ bản */
+.cal-popover {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 12px;
+}
+/* .cal-popover-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+} */
+/* Responsive */
+@media (max-width: 1024px){
+  :root { --cal-cell-h: 100px; }
+}
+@media (max-width: 768px){
+  .cal-page{ padding:16px; }
+  :root { --cal-cell-h: 90px; }
+}
+
+.cal-event-chip{
+  display:flex; flex-direction: column; gap: 4px; width:100%;
+  background:none; border:none; color:#0f172a;
+  border-radius:10px; padding:6px 0px; font-size:13px; cursor:pointer; text-align:left;
+}
+.cal-event-chip .time{ font-weight:600; color: #908b8b; min-width:52px; }
+.cal-event-chip .teacher{ display:flex; align-items:center; gap:8px; min-width:0; flex:1 1 auto; }
+.cal-event-chip .teacher .avatar{
+  width:30px; height: 30px; border-radius:999px; object-fit:cover; flex:0 0 auto;
+  background:#e5e7eb;
+}
+.cal-event-chip .teacher .name{
+  font-size: 16px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+.cal-popover-header{
+  display:flex; align-items:center; gap:12px; /* đã có justify-content:space-between trong CSS cũ? nếu có, bỏ đi */
+}
+.cal-popover-title{ font-weight:800; color:#0f172a; flex:1 1 auto; }
+.cal-popover-teacher{
+  display:flex; align-items:center; gap:8px; flex:0 0 auto;
+}
+.cal-popover-teacher .avatar{
+  width:36px; height:36px; border-radius:999px; object-fit:cover; background:#e5e7eb;
+}
+.cal-popover-teacher .name{
+  font-weight:700;
+}
