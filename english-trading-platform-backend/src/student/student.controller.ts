@@ -61,6 +61,22 @@ export class StudentController {
     return this.schedule.getCalendarEntry(studentId, enrollmentId);
   }
 
+  @Get('user/:userId/calendar')
+  getCalendarByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.schedule.getCalendarByUserId(userId);
+  }
+
+  /** (tuỳ chọn) Lấy lịch của 1 enrollment theo userId */
+  @Get('user/:userId/calendar/enrollments/:enrollmentId')
+  getCalendarEntryByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ) {
+    return this.schedule.getCalendarEntryByUserId(userId, enrollmentId);
+  }
+
   /**
    * (Tùy chọn) Regenerate lịch cho 1 enrollment đã paid của học viên.
    * Body: { paidAt?: string(ISO), offsetDays?: number }

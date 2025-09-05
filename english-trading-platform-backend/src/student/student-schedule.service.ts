@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Enrollment } from 'src/enrollment/enrollment.entity';
 import { Student } from 'src/student/student.entity';
 import { ConfigService } from '@nestjs/config';
+import { Teacher } from 'src/teacher/teacher.entity';
 
 type ParsedSlot = {
   weekday: 'mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun';
@@ -27,6 +28,7 @@ export class StudentScheduleService {
     private readonly cfg: ConfigService,
     @InjectRepository(Enrollment) private readonly enrollRepo: Repository<Enrollment>,
     @InjectRepository(Student) private readonly studentRepo: Repository<Student>,
+    @InjectRepository(Teacher)    private readonly teacherRepo: Repository<Teacher>,
   ) {}
 
   private weekdayMap: Record<string, ParsedSlot['weekday']> = {
@@ -114,7 +116,13 @@ export class StudentScheduleService {
 
     const student = await this.studentRepo.findOne({ where: { id: en.studentId } });
     if (!student) throw new NotFoundException('Student not found');
-
+    const teacher = en.teacherId
+      ? await this.teacherRepo.findOne({
+          where: { id: en.teacherId },
+          select: { id: true, fullName: true, avatarUrl: true },
+        })
+      : null;
+    if (!teacher) throw new NotFoundException('Teacher not found');
     const tz = student.timezone || 'Asia/Ho_Chi_Minh';
     const lessonLen = en.lessonLengthMinutesSnapshot;
     const lessons = en.lessons;
@@ -172,6 +180,8 @@ export class StudentScheduleService {
     const entry = {
       enrollmentId: en.id,
       teacherId: en.teacherId,
+      teacherAvatarUrl: teacher?.avatarUrl || null,   
+      teacherName: teacher?.fullName || null,
       timezone: tz,
       startDate,
       endDate,
@@ -214,6 +224,27 @@ export class StudentScheduleService {
 
   async getCalendarEntry(studentId: number, enrollmentId: number) {
     const st = await this.studentRepo.findOne({ where: { id: studentId } });
+    if (!st) throw new NotFoundException('Student not found');
+    const entry = st.calendar?.entries?.find(e => e.enrollmentId === enrollmentId);
+    if (!entry) throw new NotFoundException('Calendar entry not found');
+    return { timezone: st.timezone || 'Asia/Ho_Chi_Minh', ...entry };
+  }
+
+  /** Lấy tất cả entries lịch của học viên theo userId */
+  async getCalendarByUserId(userId: number) {
+    const st = await this.studentRepo.findOne({ where: { userId } });
+    if (!st) throw new NotFoundException('Student not found');
+
+    return {
+      studentId: st.id,
+      timezone: st.timezone || 'Asia/Ho_Chi_Minh',
+      entries: st.calendar?.entries ?? [],
+    };
+  }
+
+  /** (tuỳ chọn) Lấy lịch 1 enrollment theo userId */
+  async getCalendarEntryByUserId(userId: number, enrollmentId: number) {
+    const st = await this.studentRepo.findOne({ where: { userId } });
     if (!st) throw new NotFoundException('Student not found');
     const entry = st.calendar?.entries?.find(e => e.enrollmentId === enrollmentId);
     if (!entry) throw new NotFoundException('Calendar entry not found');

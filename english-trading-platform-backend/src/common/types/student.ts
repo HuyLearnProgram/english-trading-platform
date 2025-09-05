@@ -1,6 +1,8 @@
 export type CalendarEntry = {
   enrollmentId: number;
   teacherId: number;
+  teacherAvatarUrl?: string | null;
+  teacherName?: string | null;
   timezone: string;                // vd: 'Asia/Ho_Chi_Minh'
   startDate: string;               // YYYY-MM-DD (local theo timezone)
   endDate: string;                 // YYYY-MM-DD (local theo timezone)
