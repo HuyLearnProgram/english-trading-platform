@@ -25,6 +25,7 @@ import { PricingModule } from './pricing/pricing.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ScheduleModule } from './student/schedule.module';
 import { StudentModule } from './student/student.module';
+import { GoogleCalendarModule } from './google/google-calendar.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { StudentModule } from './student/student.module';
     PaymentsModule,
     ScheduleModule,
     StudentModule,
+    GoogleCalendarModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],
